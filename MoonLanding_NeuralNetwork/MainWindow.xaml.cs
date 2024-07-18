@@ -17,6 +17,8 @@ using System.Numerics;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using VCore.Standard.Helpers;
+using System.Threading.Tasks;
 
 namespace MoonLanding_NeuralNetwork
 {
@@ -25,8 +27,8 @@ namespace MoonLanding_NeuralNetwork
   /// </summary>
   public partial class MainWindow : Window, INotifyPropertyChanged
   {
-    private int ghostsCount = 350;
-    private int targetCount = 10;
+    private int ghostsCount = 1200;
+    private int targetCount = 50;
 
     private int[] layers = new int[] { 6, 12, 12, 4 };
     private List<NeuralNetwork> ghostsNets = new List<NeuralNetwork>();
@@ -102,14 +104,14 @@ namespace MoonLanding_NeuralNetwork
       });
 
 
-      Observable.Interval(TimeSpan.FromSeconds(0.05))
+      Observable.Interval(TimeSpan.FromSeconds(0.001))
     .ObserveOn(Application.Current.Dispatcher)
     .Subscribe(async (x) =>
    {
      //await SemaphoreSlim.WaitAsync();
      Tick();
 
-    // SemaphoreSlim.Release();
+     // SemaphoreSlim.Release();
    });
 
     }
@@ -130,10 +132,44 @@ namespace MoonLanding_NeuralNetwork
       var ghostsList = Ghosts.ToList();
       var targetList = Targets.ToList();
 
+      var threads = new List<Task>();
+
+
+      var list = ghostsList.SplitList(25);
+
+      foreach(var split in list)
+      {
+        var thread = Task.Factory.StartNew(() =>
+        {
+          foreach (var ghost in split)
+          {
+            ghost.Update(targetList, null);
+          }
+        });
+
+        threads.Add(thread);
+      }
+
+      var listT = targetList.SplitList(5);
+
+      foreach (var split in listT)
+      {
+        var thread = Task.Factory.StartNew(() =>
+        {
+          foreach (var target in split)
+          {
+            target.Update(ghostsList, targetList);
+          }
+        });
+
+        threads.Add(thread);
+      }
+
+      Task.WaitAll(threads.ToArray());
 
       foreach (var ghost in ghostsList)
       {
-        ghost.Update(targetList, null);
+
         var newX = Canvas.GetLeft(ghost.point) + ghost.vector.X;
         var newY = Canvas.GetTop(ghost.point) + ghost.vector.Y;
 
@@ -143,13 +179,11 @@ namespace MoonLanding_NeuralNetwork
         if (newY > 0 && newY < canvasHeight - ghost.point.Height)
           Canvas.SetTop(ghost.point, newY);
 
-        ghost.position = new Vector2((float)newX, (float)newY);
+        ghost.position = new Vector2((float)Canvas.GetLeft(ghost.point), (float)Canvas.GetTop(ghost.point));
       }
 
       foreach (var target in targetList)
       {
-        target.Update(ghostsList, targetList);
-
         var newX = Canvas.GetLeft(target.point) + target.vector.X;
         var newY = Canvas.GetTop(target.point) + target.vector.Y;
 
@@ -157,13 +191,13 @@ namespace MoonLanding_NeuralNetwork
         var fitness = (byte)(target.net.GetFitness() / 7000);
         target.point.Fill = new SolidColorBrush(Color.FromRgb((byte)(255 - fitness), fitness, 0));
 
-        if (newX > 0 && newX < target.point.Width)
+        if (newX > 0 && newX < canvasWidth - target.point.Width)
           Canvas.SetLeft(target.point, newX);
 
         if (newY > 0 && newY < canvasHeight - target.point.Height)
           Canvas.SetTop(target.point, newY);
 
-        target.position = new Vector2((float)newX, (float)newY);
+        target.position = new Vector2((float)Canvas.GetLeft(target.point), (float)Canvas.GetTop(target.point));
       }
     }
 

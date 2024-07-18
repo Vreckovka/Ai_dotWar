@@ -15,6 +15,9 @@ namespace MoonLanding_NeuralNetwork
       point.Width = 15;
       point.Height = 15;
       point.Fill = Brushes.Red;
+
+      width = point.Width;
+      height = point.Height;
     }
 
 
@@ -25,7 +28,7 @@ namespace MoonLanding_NeuralNetwork
       tickCount++;
       float[] inputs = new float[net.layers[0]];
 
-      var actualPoint = new Vector2((float)Canvas.GetLeft(point), (float)Canvas.GetTop(point));
+      var actualPoint = position;
 
       var targetPosition = GetCloseEntities(actualPoint, targets);
      
@@ -35,12 +38,12 @@ namespace MoonLanding_NeuralNetwork
       inputs[2] = actualPoint.X - targetPosition.X;
       inputs[3] = actualPoint.Y - targetPosition.Y;
 
-      if(siblings != null)
-      {
-        var siblingsPosition = GetCloseEntities(actualPoint, targets);
-        inputs[4] = actualPoint.X - siblingsPosition.X;
-        inputs[5] = actualPoint.Y - siblingsPosition.Y;
-      }
+      //if(siblings != null)
+      //{
+      //  var siblingsPosition = GetCloseEntities(actualPoint, siblings);
+      //  inputs[4] = actualPoint.X - siblingsPosition.X;
+      //  inputs[5] = actualPoint.Y - siblingsPosition.Y;
+      //}
 
     
 

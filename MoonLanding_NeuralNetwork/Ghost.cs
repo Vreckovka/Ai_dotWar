@@ -14,13 +14,16 @@ namespace MoonLanding_NeuralNetwork
   public class Ghost : AIObject
   {
     public AIObject Target;
-    public Vector2 position;
+
     public Ghost(NeuralNetwork neuralNetwork) : base(neuralNetwork)
     {
       point = new Ellipse();
       point.Width = 10;
       point.Height = 10;
       point.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom("#35ac60fc"); ;
+
+      width = point.Width;
+      height = point.Height;
     }
 
     public bool targetWasReached = false;
@@ -31,7 +34,7 @@ namespace MoonLanding_NeuralNetwork
       tickCount++;
       float[] inputs = new float[net.layers[0]];
 
-      var actualPoint = new Vector2((float)Canvas.GetLeft(point), (float)Canvas.GetTop(point));
+      var actualPoint = position;
       
       if (tickCount % 100 == 0)
       {
