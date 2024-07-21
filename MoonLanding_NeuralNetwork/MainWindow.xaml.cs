@@ -19,6 +19,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using VCore.Standard.Helpers;
 using System.Threading.Tasks;
+using System.Reactive.Disposables;
+using LiveCharts;
 
 namespace MoonLanding_NeuralNetwork
 {
@@ -27,10 +29,11 @@ namespace MoonLanding_NeuralNetwork
   /// </summary>
   public partial class MainWindow : Window, INotifyPropertyChanged
   {
-    private int ghostsCount = 1200;
-    private int targetCount = 50;
+    private int ghostsCount = 50;
+    private int targetCount = 150;
 
-    private int[] layers = new int[] { 6, 12, 12, 4 };
+    const int inputNumber = 10;
+
     private List<NeuralNetwork> ghostsNets = new List<NeuralNetwork>();
     private List<NeuralNetwork> targetsNets = new List<NeuralNetwork>();
 
@@ -42,6 +45,9 @@ namespace MoonLanding_NeuralNetwork
     int canvasWidth = 1000;
     int canvasHeight = 1000;
 
+    public ChartValues<int> ChartData { get; set; } = new ChartValues<int>();
+
+    public ObservableCollection<int> Labels { get; set; } = new ObservableCollection<int>();
 
     #region GenerationCount
 
@@ -62,6 +68,83 @@ namespace MoonLanding_NeuralNetwork
 
     #endregion
 
+    #region SucessCount
+
+    private int successCount;
+
+    public int SucessCount
+    {
+      get { return successCount; }
+      set
+      {
+        if (value != successCount)
+        {
+          successCount = value;
+          RaisePropertyChanged();
+        }
+      }
+    }
+
+    #endregion
+
+    #region BestFitness
+
+    private double bestFitness;
+
+    public double BestFitness
+    {
+      get { return bestFitness; }
+      set
+      {
+        if (value != bestFitness)
+        {
+          bestFitness = value;
+          RaisePropertyChanged();
+        }
+      }
+    }
+
+    #endregion
+
+    #region TickCount
+
+    private int tickCount;
+
+    public int TickCount
+    {
+      get { return tickCount; }
+      set
+      {
+        if (value != tickCount)
+        {
+          tickCount = value;
+          RaisePropertyChanged();
+        }
+      }
+    }
+
+    #endregion
+
+    #region BestTickCount
+
+    private int bestTickCount;
+
+    public int BestTickCount
+    {
+      get { return bestTickCount; }
+      set
+      {
+        if (value != bestTickCount)
+        {
+          bestTickCount = value;
+          RaisePropertyChanged();
+        }
+      }
+    }
+
+    #endregion
+
+
 
     protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
     {
@@ -79,14 +162,14 @@ namespace MoonLanding_NeuralNetwork
 
       for (int i = 0; i < ghostsCount; i++)
       {
-        NeuralNetwork net = new NeuralNetwork(layers);
+        NeuralNetwork net = new NeuralNetwork(new int[] { 4, 8, 8, 4 });
         net.Mutate();
         ghostsNets.Add(net);
       }
 
       for (int i = 0; i < targetCount; i++)
       {
-        NeuralNetwork net = new NeuralNetwork(layers);
+        NeuralNetwork net = new NeuralNetwork(new int[] { inputNumber, inputNumber * 2, inputNumber * 2, 4 } );
         net.Mutate();
         targetsNets.Add(net);
       }
@@ -95,13 +178,6 @@ namespace MoonLanding_NeuralNetwork
       CreateTargets(targetCount);
 
       DataContext = this;
-
-      Observable.Interval(TimeSpan.FromSeconds(15))
-      .ObserveOn(Application.Current.Dispatcher)
-      .Subscribe((x) =>
-      {
-        UpdateGeneration();
-      });
 
 
       Observable.Interval(TimeSpan.FromSeconds(0.001))
@@ -127,30 +203,42 @@ namespace MoonLanding_NeuralNetwork
       return (float)(minValue + (next * (maxValue - minValue)));
     }
 
-    public async void Tick()
+    private List<Target> liveTargets = new List<Target>();
+    public void Tick()
     {
+      TickCount++;
+
+      foreach (var target in Targets.Where(x => x.net.GetFitness() < -1000).ToList())
+      {
+        canvas.Children.Remove(target.point);
+        liveTargets.Remove(target);
+        target.IsDead = true;
+      }
+
+      SucessCount = liveTargets.Count;
+
       var ghostsList = Ghosts.ToList();
-      var targetList = Targets.ToList();
+      var targetList = liveTargets.ToList();
 
       var threads = new List<Task>();
 
 
       var list = ghostsList.SplitList(25);
 
-      foreach(var split in list)
+      foreach (var split in list)
       {
         var thread = Task.Factory.StartNew(() =>
         {
           foreach (var ghost in split)
           {
-            ghost.Update(targetList, null);
+            ghost.Update(liveTargets, liveTargets);
           }
         });
 
         threads.Add(thread);
       }
 
-      var listT = targetList.SplitList(5);
+      var listT = Targets.SplitList(5);
 
       foreach (var split in listT)
       {
@@ -158,7 +246,7 @@ namespace MoonLanding_NeuralNetwork
         {
           foreach (var target in split)
           {
-            target.Update(ghostsList, targetList);
+            target.Update(ghostsList, new List<AIObject>());
           }
         });
 
@@ -188,8 +276,7 @@ namespace MoonLanding_NeuralNetwork
         var newY = Canvas.GetTop(target.point) + target.vector.Y;
 
 
-        var fitness = (byte)(target.net.GetFitness() / 7000);
-        target.point.Fill = new SolidColorBrush(Color.FromRgb((byte)(255 - fitness), fitness, 0));
+        target.ChangeColor();
 
         if (newX > 0 && newX < canvasWidth - target.point.Width)
           Canvas.SetLeft(target.point, newX);
@@ -199,14 +286,48 @@ namespace MoonLanding_NeuralNetwork
 
         target.position = new Vector2((float)Canvas.GetLeft(target.point), (float)Canvas.GetTop(target.point));
       }
+
+      if(SucessCount == 0)
+      {
+        UpdateGeneration();
+      }
+    }
+
+    SerialDisposable serialDisposable = new SerialDisposable();
+
+    private void ScheduleUpdateGeneration()
+    {
+      serialDisposable.Disposable?.Dispose();
+
+      serialDisposable.Disposable = Observable.Interval(TimeSpan.FromSeconds(10))
+     .ObserveOn(Application.Current.Dispatcher)
+     .Subscribe((x) =>
+     {
+       UpdateGeneration();
+     });
     }
 
     private void UpdateGeneration()
     {
+      if (SucessCount > BestFitness)
+      {
+        BestFitness = SucessCount;
+      }
+
+      if (TickCount > BestTickCount)
+      {
+        BestTickCount = TickCount;
+      }
+
+      ChartData.Add(TickCount);
+      Labels.Add(GenerationCount);
+
       UpdateGhosts();
       UpdateTargets();
 
       GenerationCount++;
+      TickCount = 0;
+
       CreateGhosts(ghostsCount);
       CreateTargets(targetCount);
 
@@ -215,10 +336,18 @@ namespace MoonLanding_NeuralNetwork
         ghostsNets[i].SetFitness(0f);
         Ghosts[i].Target = null;
       }
+
+      for (int i = 0; i < targetCount; i++)
+      {
+        targetsNets[i].SetFitness(0f);
+      }
     }
 
     private void CreateGhosts(int count)
     {
+      var ghostFill = (SolidColorBrush)new BrushConverter().ConvertFrom("#35ac60fc");
+      ghostFill.Freeze();
+
       for (int i = 0; i < count; i++)
       {
         if (Ghosts.Count > 0)
@@ -232,7 +361,7 @@ namespace MoonLanding_NeuralNetwork
 
       for (int i = 0; i < count; i++)
       {
-        var newGhost = new Ghost(ghostsNets[i]);
+        var newGhost = new Ghost(ghostsNets[i], ghostFill);
 
         Ghosts.Add(newGhost);
         canvas.Children.Add(newGhost.point);
@@ -297,9 +426,11 @@ namespace MoonLanding_NeuralNetwork
           var oldtarget = Targets[0];
           Targets.Remove(oldtarget);
           canvas.Children.Remove(oldtarget.point);
+
         }
 
       }
+      liveTargets = new List<Target>();
 
       for (int i = 0; i < count; i++)
       {
@@ -309,12 +440,16 @@ namespace MoonLanding_NeuralNetwork
         Targets.Add(newTarget);
         canvas.Children.Add(newTarget.point);
 
-        var newX = random.Next(0, (int)(canvasWidth - newTarget.point.Width));
-        var newY = random.Next(0, (int)(canvasHeight - newTarget.point.Height));
+        var newX = random.Next(0, (int)(canvasWidth - (newTarget.point.Width * 3)));
+        var newY = random.Next(0, (int)(canvasHeight - (newTarget.point.Height * 3)));
 
+        newTarget.position = new Vector2((float)newX, (float)newY);
         Canvas.SetLeft(newTarget.point, newX);
         Canvas.SetTop(newTarget.point, newY);
       }
+
+      liveTargets.AddRange(Targets);
+      SucessCount = liveTargets.Count;
     }
   }
 }

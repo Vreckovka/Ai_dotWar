@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 
@@ -8,9 +9,8 @@ namespace MoonLanding_NeuralNetwork
 {
   public abstract class AIObject
   {
-    public Shape point;
+    public FrameworkElement point;
     public Vector2 vector = new Vector2(1, 1);
-
 
     #region position
 
@@ -29,8 +29,6 @@ namespace MoonLanding_NeuralNetwork
     }
 
     #endregion
-
-
 
     public NeuralNetwork net;
 
@@ -52,15 +50,16 @@ namespace MoonLanding_NeuralNetwork
 
     }
 
-    protected Vector2 GetCloseEntities(Vector2 actualPoint, IEnumerable<AIObject> targets)
+    protected Vector2? GetCloseEntities(double distance ,Vector2 actualPoint, IEnumerable<AIObject> targets, out int number)
     {
       var orderedTargets = targets
       .Select(x => new { target = x, distance = Vector2.Distance(actualPoint, x.GetPosition()) })
       .OrderBy(x => x.distance);
 
 
-      var closeTargets = orderedTargets.Where(x => x.distance < 10);
-      Vector2 targetPosition = new Vector2(1000, 1000);
+      var closeTargets = orderedTargets.Where(x => x.distance < distance);
+
+      Vector2? targetPosition = null;
 
       if (closeTargets.Any())
       {
@@ -68,6 +67,8 @@ namespace MoonLanding_NeuralNetwork
          closeTargets.Average(x => x.target.GetPosition().X),
          closeTargets.Average(x => x.target.GetPosition().Y));
       }
+
+      number = closeTargets.Count();
 
       return targetPosition;
     }

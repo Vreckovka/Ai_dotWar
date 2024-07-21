@@ -162,7 +162,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
           float weight = weights[i][j][k];
 
           //mutate weight value 
-          float randomNumber = MainWindow.RandomNumberBetween(0f, 100f);
+          float randomNumber = MainWindow.RandomNumberBetween(0f, 200f);
 
           if (randomNumber <= 2f)
           { //if 1
@@ -172,7 +172,7 @@ public class NeuralNetwork : IComparable<NeuralNetwork>
           else if (randomNumber <= 4f)
           { //if 2
             //pick random weight between -1 and 1
-            weight = MainWindow.RandomNumberBetween(-0.5f, 0.5f);
+            weight = MainWindow.RandomNumberBetween(-1f, 1f);
           }
           else if (randomNumber <= 6f)
           { //if 3
