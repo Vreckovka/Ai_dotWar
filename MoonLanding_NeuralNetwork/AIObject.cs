@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Windows;
@@ -64,13 +65,31 @@ namespace MoonLanding_NeuralNetwork
       if (closeTargets.Any())
       {
         targetPosition = new Vector2(
-         closeTargets.Average(x => x.target.GetPosition().X),
-         closeTargets.Average(x => x.target.GetPosition().Y));
+        GetMedian(closeTargets.Select(x => x.target.GetPosition().X).ToArray()),
+         GetMedian(closeTargets.Select(x => x.target.GetPosition().Y).ToArray()));
       }
 
       number = closeTargets.Count();
 
       return targetPosition;
+    }
+
+    public static float GetMedian(float[] sourceNumbers)
+    {
+      //Framework 2.0 version of this method. there is an easier way in F4        
+      if (sourceNumbers == null || sourceNumbers.Length == 0)
+        throw new System.Exception("Median of empty array not defined.");
+
+      //make sure the list is sorted, but use a new array
+      float[] sortedPNumbers = (float[])sourceNumbers.Clone();
+      Array.Sort(sortedPNumbers);
+
+      //get the median
+      int size = sortedPNumbers.Length;
+      int mid = size / 2;
+      float median = (size % 2 != 0) ? (float)sortedPNumbers[mid] : ((float)sortedPNumbers[mid] + (float)sortedPNumbers[mid - 1]) / 2;
+      
+      return median;
     }
 
   }

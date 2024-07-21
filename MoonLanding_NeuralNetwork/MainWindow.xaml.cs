@@ -29,10 +29,10 @@ namespace MoonLanding_NeuralNetwork
   /// </summary>
   public partial class MainWindow : Window, INotifyPropertyChanged
   {
-    private int ghostsCount = 50;
+    private int ghostsCount = 100;
     private int targetCount = 150;
 
-    const int inputNumber = 10;
+    const int inputNumber = 11;
 
     private List<NeuralNetwork> ghostsNets = new List<NeuralNetwork>();
     private List<NeuralNetwork> targetsNets = new List<NeuralNetwork>();
@@ -169,13 +169,14 @@ namespace MoonLanding_NeuralNetwork
 
       for (int i = 0; i < targetCount; i++)
       {
-        NeuralNetwork net = new NeuralNetwork(new int[] { inputNumber, inputNumber * 2, inputNumber * 2, 4 } );
+        NeuralNetwork net = new NeuralNetwork(new int[] { inputNumber, inputNumber * 2, inputNumber * 2, 4 });
         net.Mutate();
         targetsNets.Add(net);
       }
 
       CreateGhosts(ghostsCount);
       CreateTargets(targetCount);
+      ScheduleAdGhosts();
 
       DataContext = this;
 
@@ -184,10 +185,7 @@ namespace MoonLanding_NeuralNetwork
     .ObserveOn(Application.Current.Dispatcher)
     .Subscribe(async (x) =>
    {
-     //await SemaphoreSlim.WaitAsync();
      Tick();
-
-     // SemaphoreSlim.Release();
    });
 
     }
@@ -208,7 +206,7 @@ namespace MoonLanding_NeuralNetwork
     {
       TickCount++;
 
-      foreach (var target in Targets.Where(x => x.net.GetFitness() < -1000).ToList())
+      foreach (var target in Targets.Where(x => x.Health <= 0).ToList())
       {
         canvas.Children.Remove(target.point);
         liveTargets.Remove(target);
@@ -287,7 +285,7 @@ namespace MoonLanding_NeuralNetwork
         target.position = new Vector2((float)Canvas.GetLeft(target.point), (float)Canvas.GetTop(target.point));
       }
 
-      if(SucessCount == 0)
+      if (SucessCount == 0)
       {
         UpdateGeneration();
       }
@@ -295,17 +293,30 @@ namespace MoonLanding_NeuralNetwork
 
     SerialDisposable serialDisposable = new SerialDisposable();
 
-    private void ScheduleUpdateGeneration()
+    private void ScheduleAdGhosts()
     {
       serialDisposable.Disposable?.Dispose();
 
-      serialDisposable.Disposable = Observable.Interval(TimeSpan.FromSeconds(10))
+      serialDisposable.Disposable = Observable.Interval(TimeSpan.FromSeconds(3))
      .ObserveOn(Application.Current.Dispatcher)
      .Subscribe((x) =>
      {
-       UpdateGeneration();
+       var ticks = TickCount / 1000;
+       var bestGhost = Ghosts.OrderByDescending(x => x.net.GetFitness()).FirstOrDefault();
+       var ghostFill = (SolidColorBrush)new BrushConverter().ConvertFrom("#35ac60fc");
+       ghostFill.Freeze();
+
+       if (bestGhost != null && Ghosts.Count < 500)
+       {
+         for (int i = 0; i < ticks; i++)
+         {
+           AddGhost(new NeuralNetwork(bestGhost.net), ghostFill);
+         }
+       }
      });
     }
+
+    #region UpdateGeneration
 
     private void UpdateGeneration()
     {
@@ -341,42 +352,13 @@ namespace MoonLanding_NeuralNetwork
       {
         targetsNets[i].SetFitness(0f);
       }
+
+      ScheduleAdGhosts();
     }
 
-    private void CreateGhosts(int count)
-    {
-      var ghostFill = (SolidColorBrush)new BrushConverter().ConvertFrom("#35ac60fc");
-      ghostFill.Freeze();
+    #endregion
 
-      for (int i = 0; i < count; i++)
-      {
-        if (Ghosts.Count > 0)
-        {
-          var oldtarget = Ghosts[0];
-          Ghosts.Remove(oldtarget);
-          canvas.Children.Remove(oldtarget.point);
-        }
-
-      }
-
-      for (int i = 0; i < count; i++)
-      {
-        var newGhost = new Ghost(ghostsNets[i], ghostFill);
-
-        Ghosts.Add(newGhost);
-        canvas.Children.Add(newGhost.point);
-
-        var newX = random.Next(0, (int)(canvasWidth - newGhost.point.Width));
-        var newY = random.Next(0, (int)(canvasHeight - newGhost.point.Height));
-
-        Canvas.SetLeft(newGhost.point, newX);
-        Canvas.SetTop(newGhost.point, newY);
-        Canvas.SetZIndex(newGhost.point, 100);
-
-
-        newGhost.position = new Vector2((float)newX, (float)newY);
-      }
-    }
+    #region UpdateGhosts
 
     private void UpdateGhosts()
     {
@@ -397,6 +379,10 @@ namespace MoonLanding_NeuralNetwork
       }
     }
 
+    #endregion
+
+    #region UpdateTargets
+
     private void UpdateTargets()
     {
       targetsNets = targetsNets.OrderBy(x => x.GetFitness()).ToList();
@@ -414,8 +400,33 @@ namespace MoonLanding_NeuralNetwork
         Targets[i].net = failedNet;
         Targets[successIndex].net = sucessNet;
       }
-
     }
+
+    #endregion
+
+    #region CreateGhosts
+
+    private void CreateGhosts(int count)
+    {
+      var ghostFill = (SolidColorBrush)new BrushConverter().ConvertFrom("#35ac60fc");
+      ghostFill.Freeze();
+
+      for (int i = 0; i < Ghosts.Count; i++)
+      {
+        canvas.Children.Remove(Ghosts[i].point);
+      }
+
+      Ghosts.Clear();
+
+      for (int i = 0; i < count; i++)
+      {
+        AddGhost(ghostsNets[i], ghostFill);
+      }
+    }
+
+    #endregion
+
+    #region CreateTargets
 
     private void CreateTargets(int count)
     {
@@ -451,5 +462,29 @@ namespace MoonLanding_NeuralNetwork
       liveTargets.AddRange(Targets);
       SucessCount = liveTargets.Count;
     }
+
+    #endregion
+
+    #region AddGhost
+
+    private void AddGhost(NeuralNetwork neuralNetwork, SolidColorBrush ghostFill)
+    {
+      var newGhost = new Ghost(neuralNetwork, ghostFill);
+
+      Ghosts.Add(newGhost);
+      canvas.Children.Add(newGhost.point);
+
+      var newX = random.Next(0, (int)(canvasWidth - newGhost.point.Width));
+      var newY = random.Next(0, (int)(canvasHeight - newGhost.point.Height));
+
+      Canvas.SetLeft(newGhost.point, newX);
+      Canvas.SetTop(newGhost.point, newY);
+      Canvas.SetZIndex(newGhost.point, 100);
+
+
+      newGhost.position = new Vector2((float)newX, (float)newY);
+    }
+
+    #endregion
   }
 }

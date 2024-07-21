@@ -12,13 +12,17 @@ namespace MoonLanding_NeuralNetwork
   {
     TextBlock textBlock = new TextBlock();
     Ellipse elipse = new Ellipse();
+
+    public double Health { get; set; } = 255;
+    public int size = 15;
+
     public Target(NeuralNetwork neuralNetwork) : base(neuralNetwork)
     {
 
       var grid = new Grid();
 
-      grid.Width = 15;
-      grid.Height = 15;
+      grid.Width = size;
+      grid.Height = size;
 
       textBlock.Foreground = Brushes.White;
       textBlock.HorizontalAlignment = System.Windows.HorizontalAlignment.Center;
@@ -64,10 +68,10 @@ namespace MoonLanding_NeuralNetwork
       inputs[5] = siblings.Count();
 
       inputs[6] = actualPoint.X - min;
-      inputs[7] = actualPoint.X - (1000 - min) ;
-      inputs[8] = actualPoint.Y- min;
+      inputs[7] = actualPoint.X - (1000 - min);
+      inputs[8] = actualPoint.Y - min;
       inputs[9] = actualPoint.Y - (1000 - min);
-
+      inputs[10] = (float)Health;
 
       float[] output = net.FeedForward(inputs);
 
@@ -82,51 +86,79 @@ namespace MoonLanding_NeuralNetwork
 
 
       if (actualPoint.X > min &&
-        actualPoint.X < 1000 - min &&
+        actualPoint.X + width < 1000 - min &&
         actualPoint.Y > min &&
-        actualPoint.Y < 1000 - min)
+        actualPoint.Y + height < 1000 - min)
       {
         if (Math.Abs(vector.X) <= 0 && Math.Abs(vector.Y) <= 0)
         {
-          net.AddFitness(-1);
+          Health -= 0.1;
         }
         else
         {
           net.AddFitness(1);
+
+          Health += 1;
         }
       }
       else
       {
-        net.AddFitness(-100);
+        Health -= 10;
       }
     }
 
     public void ChangeColor()
     {
-      var fitness = net.GetFitness();
+      textBlock.Text = Health.ToString();
+      var hp = Health;
 
-      textBlock.Text = net.GetFitness().ToString();
+      if (hp < 0)
+        hp = 0;
 
-      SolidColorBrush brush = new SolidColorBrush(Color.FromRgb(255, 0, 0));
+      var r = (byte)Math.Abs(hp - 255);
+      var g = (byte)hp;
+      var b = (byte)0;
 
-      if (fitness > 255)
+      if (hp > 255)
       {
-        brush = new SolidColorBrush(Color.FromRgb(50, 0, 255));
+        r = 0;
+        g = 255;
+        b = (byte)(hp - 255);
 
-        var mod = fitness / 2;
-
-        if (mod <= 255)
+        if (Health > 510)
         {
-          brush = new SolidColorBrush(Color.FromRgb(50, (byte)(255 - fitness), (byte)fitness));
+          r = (byte)(hp - 510);
+          g = 255;
+          b = 255;
+        }
+
+        if (Health > 765)
+        {
+          r = 255;
+          g = 255;
+          r = 255;
+
+          height = size + ((Health - 765) / 100.0);
+          width = size + ((Health - 765) / 100.0);
+
+          if (height > 65)
+          {
+            height = 65;
+            width = 65;
+          }
+
+          point.Height = height;
+          point.Width = width;
         }
       }
-      else if (fitness > 0)
-      {
-        brush = new SolidColorBrush(Color.FromRgb((byte)(255 - fitness), (byte)fitness, 0));
-      }
+
+      SolidColorBrush brush = new SolidColorBrush(Color.FromRgb(r, g, b));
+
 
       elipse.Fill = brush;
     }
+
+   
   }
 }
 

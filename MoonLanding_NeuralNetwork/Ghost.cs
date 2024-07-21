@@ -37,8 +37,10 @@ namespace MoonLanding_NeuralNetwork
       float[] inputs = new float[net.layers[0]];
 
       var actualPoint = position;
+      var castedTarget = (Target)Target;
+
       
-      if (random.Next(0,100) < 5 || !targets.Contains(Target))
+      if (random.Next(0, 100) < 5)
       {
         Target = null;
       }
@@ -47,17 +49,16 @@ namespace MoonLanding_NeuralNetwork
       if (Target == null)
       {
         var target = targets
-          .Select(x => new { target = x, distance = Vector2.Distance(actualPoint, x.GetPosition()) })
-          .OrderBy(x => x.distance)
-          .FirstOrDefault();
-
+           .Select(x => new { target = x, distance = Vector2.Distance(actualPoint, x.GetPosition()) })
+           .OrderBy(x => x.distance)
+           .FirstOrDefault();
         Target = target?.target;
       }
 
       var targetPosition = Target?.GetPosition();
-      
 
-      if(targetPosition != null)
+
+      if (targetPosition != null)
       {
         var actualDistance = Vector2.Distance(GetPosition(), targetPosition.Value);
 
@@ -74,13 +75,21 @@ namespace MoonLanding_NeuralNetwork
       vector.X = output[0] + (output[2] * 1f);
       vector.Y = output[1] + (output[3] * 1f);
 
-
-      foreach (var target in targets
-        .Where(x => Math.Abs(Vector2.Distance(actualPoint, x.GetPosition())) <= Target.width))
+      if (Target != null)
       {
+        foreach (var target in targets
+        .Where(x => Math.Abs(Vector2.Distance(actualPoint, x.GetPosition())) <= Target.width))
+        {
           net.AddFitness(1);
-          target.net.AddFitness(-5);
+
+          if (target is Target targetTarget)
+          {
+            targetTarget.Health -= 2;
+          }
+        }
       }
+
+
     }
   }
 }
