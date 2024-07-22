@@ -26,7 +26,7 @@ namespace MoonLanding_NeuralNetwork
     private readonly Random random = new Random();
 
     private int ghostsCount = 100;
-    private int targetCount = 150;
+    private int targetCount = 50;
 
     const int inputNumber = 11;
 
@@ -318,7 +318,7 @@ namespace MoonLanding_NeuralNetwork
 
        ghostFill.Freeze();
 
-       if (bestGhost != null && GhostManager.Agents.Count < 700)
+       if (bestGhost != null && GhostManager.Agents.Count < 500)
        {
          for (int i = 0; i < ticks; i++)
          {

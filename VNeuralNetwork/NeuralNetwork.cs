@@ -115,11 +115,7 @@ namespace VNeuralNetwork
       Weights = weightsList.ToArray(); //convert to 3D array
     }
 
-    /// <summary>
-    /// Feed forward this neural network with a given input array
-    /// </summary>
-    /// <param name="inputs">Inputs to network</param>
-    /// <returns></returns>
+    
     public float[] FeedForward(float[] inputs)
     {
       //Add inputs to the neuron matrix
