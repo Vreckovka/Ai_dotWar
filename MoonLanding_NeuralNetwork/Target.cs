@@ -5,10 +5,11 @@ using System.Numerics;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using VNeuralNetwork;
 
 namespace MoonLanding_NeuralNetwork
 {
-  public class Target : AIObject
+  public class Target : AIWpfObject
   {
     TextBlock textBlock = new TextBlock();
     Ellipse elipse = new Ellipse();
@@ -43,12 +44,11 @@ namespace MoonLanding_NeuralNetwork
 
 
     public bool IsDead;
-    private Random random = new Random();
 
-    public override void Update(IEnumerable<AIObject> targets, IEnumerable<AIObject> siblings)
+    public override void Update(IEnumerable<AIWpfObject> targets, IEnumerable<AIWpfObject> siblings)
     {
 
-      float[] inputs = new float[net.layers[0]];
+      float[] inputs = new float[NeuralNetwork.Layers[0]];
 
       float min = (float)width * 2f;
       var actualPoint = position;
@@ -73,14 +73,14 @@ namespace MoonLanding_NeuralNetwork
       inputs[9] = actualPoint.Y - (1000 - min);
       inputs[10] = (float)Health;
 
-      float[] output = net.FeedForward(inputs);
+      float[] output = NeuralNetwork.FeedForward(inputs);
 
-      vector.X = output[0] + (output[2] * 4.25f);
-      vector.Y = output[1] + (output[3] * 4.22f);
+      vector.X = output[0] + (output[2] * 3.25f);
+      vector.Y = output[1] + (output[3] * 3.22f);
 
       if (IsDead)
       {
-        net.AddFitness(-1000);
+        NeuralNetwork.AddFitness(-1000);
         return;
       }
 
@@ -96,7 +96,7 @@ namespace MoonLanding_NeuralNetwork
         }
         else
         {
-          net.AddFitness(1);
+          NeuralNetwork.AddFitness(1);
 
           Health += 1;
         }

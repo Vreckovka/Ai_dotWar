@@ -6,21 +6,22 @@ using System.Text;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using VNeuralNetwork;
 
 namespace MoonLanding_NeuralNetwork
 {
 
 
-  public class Ghost : AIObject
+  public class Ghost : AIWpfObject
   {
-    public AIObject Target;
+    public AIWpfObject Target;
     private Random random = new Random();
-    public Ghost(NeuralNetwork neuralNetwork, SolidColorBrush fill) : base(neuralNetwork)
+
+    public Ghost(NeuralNetwork neuralNetwork) : base(neuralNetwork)
     {
       var ellipse = new Ellipse();
       ellipse.Width = 10;
       ellipse.Height = 10;
-      ellipse.Fill = fill;
 
       point = ellipse;
 
@@ -29,12 +30,10 @@ namespace MoonLanding_NeuralNetwork
     }
 
     public bool targetWasReached = false;
-    int tickCount = 0;
 
-    public override void Update(IEnumerable<AIObject> targets, IEnumerable<AIObject> siblings)
+    public override void Update(IEnumerable<AIWpfObject> targets, IEnumerable<AIWpfObject> siblings)
     {
-      tickCount++;
-      float[] inputs = new float[net.layers[0]];
+      float[] inputs = new float[NeuralNetwork.Layers[0]];
 
       var actualPoint = position;
       var castedTarget = (Target)Target;
@@ -70,7 +69,7 @@ namespace MoonLanding_NeuralNetwork
       }
 
 
-      float[] output = net.FeedForward(inputs);
+      float[] output = NeuralNetwork.FeedForward(inputs);
 
       vector.X = output[0] + (output[2] * 1f);
       vector.Y = output[1] + (output[3] * 1f);
@@ -80,16 +79,14 @@ namespace MoonLanding_NeuralNetwork
         foreach (var target in targets
         .Where(x => Math.Abs(Vector2.Distance(actualPoint, x.GetPosition())) <= Target.width))
         {
-          net.AddFitness(1);
+          NeuralNetwork.AddFitness(1);
 
           if (target is Target targetTarget)
           {
-            targetTarget.Health -= 2;
+            targetTarget.Health -= 3;
           }
         }
       }
-
-
     }
   }
 }

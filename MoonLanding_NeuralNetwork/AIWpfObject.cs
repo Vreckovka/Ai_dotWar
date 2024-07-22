@@ -5,10 +5,11 @@ using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
+using VNeuralNetwork;
 
 namespace MoonLanding_NeuralNetwork
 {
-  public abstract class AIObject
+  public abstract class AIWpfObject : AIObject
   {
     public FrameworkElement point;
     public Vector2 vector = new Vector2(1, 1);
@@ -31,17 +32,14 @@ namespace MoonLanding_NeuralNetwork
 
     #endregion
 
-    public NeuralNetwork net;
-
     public double width;
     public double height;
 
-    public AIObject(NeuralNetwork neuralNetwork)
+    public AIWpfObject(NeuralNetwork neuralNetwork) : base(neuralNetwork)
     {
-      net = neuralNetwork;
     }
 
-    public abstract void Update(IEnumerable<AIObject> targets, IEnumerable<AIObject> siblings);
+    public abstract void Update(IEnumerable<AIWpfObject> targets, IEnumerable<AIWpfObject> siblings);
 
     public Vector2 GetPosition()
     {
@@ -51,7 +49,7 @@ namespace MoonLanding_NeuralNetwork
 
     }
 
-    protected Vector2? GetCloseEntities(double distance ,Vector2 actualPoint, IEnumerable<AIObject> targets, out int number)
+    protected Vector2? GetCloseEntities(double distance ,Vector2 actualPoint, IEnumerable<AIWpfObject> targets, out int number)
     {
       var orderedTargets = targets
       .Select(x => new { target = x, distance = Vector2.Distance(actualPoint, x.GetPosition()) })

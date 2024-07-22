@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.34407.143
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeuralNetwork", "MoonLanding_NeuralNetwork\NeuralNetwork.csproj", "{7A36BFD2-FA01-4D1E-AC2E-FD5C728AC126}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeuralNetwork_WPF", "MoonLanding_NeuralNetwork\NeuralNetwork_WPF.csproj", "{7A36BFD2-FA01-4D1E-AC2E-FD5C728AC126}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VCore.WPF", "D:\Aplikacie\CustomLibraries\VCore\VCore.WPF.csproj", "{1240ED8C-BB1B-4D13-BCF5-B4B7DA27E3F2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VCore.Standard", "D:\Aplikacie\CustomLibraries\VCore.Standard\VCore.Standard.csproj", "{B33354F3-18F2-4229-8470-9E0B6C736DE9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VNeuralNetwork", "VNeuralNetwork\VNeuralNetwork.csproj", "{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VPlayer.DarkTheme", "D:\Aplikacie\VPlayer\VPlayer.DarkTheme\VPlayer.DarkTheme.csproj", "{CF13EB63-D02A-4509-BC57-450D99473D3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +59,30 @@ Global
 		{B33354F3-18F2-4229-8470-9E0B6C736DE9}.Release|x64.Build.0 = Release|Any CPU
 		{B33354F3-18F2-4229-8470-9E0B6C736DE9}.Release|x86.ActiveCfg = Release|x86
 		{B33354F3-18F2-4229-8470-9E0B6C736DE9}.Release|x86.Build.0 = Release|x86
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Debug|x64.Build.0 = Debug|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Debug|x86.Build.0 = Debug|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Release|x64.ActiveCfg = Release|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Release|x64.Build.0 = Release|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Release|x86.ActiveCfg = Release|Any CPU
+		{5011EAEE-EBF3-4C09-BCED-A77CED5C5858}.Release|x86.Build.0 = Release|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Debug|x64.Build.0 = Debug|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Debug|x86.Build.0 = Debug|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Release|x64.ActiveCfg = Release|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Release|x64.Build.0 = Release|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Release|x86.ActiveCfg = Release|Any CPU
+		{CF13EB63-D02A-4509-BC57-450D99473D3B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

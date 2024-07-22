@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
+    <AssemblyName>NeuralNetwork_WPF</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,8 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\VNeuralNetwork\VNeuralNetwork.csproj" />
     <ProjectReference Include="D:\Aplikacie\CustomLibraries\VCore.Standard\VCore.Standard.csproj" />
     <ProjectReference Include="D:\Aplikacie\CustomLibraries\VCore\VCore.WPF.csproj" />
+    <ProjectReference Include="D:\Aplikacie\VPlayer\VPlayer.DarkTheme\VPlayer.DarkTheme.csproj" />
   </ItemGroup>
 
 </Project>
