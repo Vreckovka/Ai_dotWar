@@ -9,7 +9,7 @@
   Title="MainWindow"
   Width="1500"
   Height="1100"
-  Background="{StaticResource BackgroudBrush}"
+  Background="#151515"
   FontFamily="pack://application:,,,/VCore.WPF;component/Resources/Fonts/Roboto/#Roboto"
   WindowStartupLocation="CenterScreen"
   mc:Ignorable="d">
@@ -18,120 +18,123 @@
     <Style BasedOn="{StaticResource {x:Type Window}}" TargetType="Window" />
   </Window.Style>
 
-  <Grid Background="#151515">
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="auto" />
-      <ColumnDefinition />
-    </Grid.ColumnDefinitions>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="auto" />
-      <RowDefinition />
-    </Grid.RowDefinitions>
+  <Border Padding="5">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="auto" />
+        <RowDefinition />
+      </Grid.RowDefinitions>
 
-    <StackPanel Orientation="Horizontal">
-      <TextBlock
-        Margin="5,0"
-        Foreground="White"
-        Text="{Binding GenerationCount}" />
-      <TextBlock
-        Margin="5,0"
-        Foreground="White"
-        Text="{Binding SucessCount}" />
-      <TextBlock
-        Margin="5,0"
-        Foreground="White"
-        Text="{Binding BestFitness}" />
+      <StackPanel Orientation="Horizontal">
+        <TextBlock
+          Margin="5,0"
+          Foreground="White"
+          Text="{Binding GenerationCount}" />
+        <TextBlock
+          Margin="5,0"
+          Foreground="White"
+          Text="{Binding SucessCount}" />
+        <TextBlock
+          Margin="5,0"
+          Foreground="White"
+          Text="{Binding BestFitness}" />
 
-      <TextBlock
-        Margin="5,0"
-        Foreground="White"
-        Text="{Binding TickCount}" />
-      <TextBlock
-        Margin="5,0"
-        Foreground="White"
-        Text="{Binding BestTickCount}" />
-    </StackPanel>
+        <TextBlock
+          Margin="5,0"
+          Foreground="White"
+          Text="{Binding TickCount}" />
+        <TextBlock
+          Margin="5,0"
+          Foreground="White"
+          Text="{Binding BestTickCount}" />
+      </StackPanel>
 
 
-    <Border
-      Grid.Row="1"
-      Width="1000"
-      Height="1000"
-      BorderBrush="White"
-      BorderThickness="1">
-      <Grid>
-        <Canvas x:Name="canvas" />
+      <Border
+        Grid.Row="1"
+        Width="1000"
+        Height="1000"
+        BorderBrush="#454545"
+        BorderThickness="1">
+        <Grid>
+          <Canvas x:Name="canvas" />
 
-        <Border Height="30" VerticalAlignment="Top">
-          <Border.Background>
-            <LinearGradientBrush MappingMode="Absolute" SpreadMethod="Repeat" StartPoint="0,0" EndPoint="4,4">
-              <GradientStop Offset="0" Color="Red" />
-              <GradientStop Offset="0.1" Color="Transparent" />
-            </LinearGradientBrush>
+          <Border Height="30" VerticalAlignment="Top">
+            <Border.Background>
+              <LinearGradientBrush MappingMode="Absolute" SpreadMethod="Repeat" StartPoint="0,0" EndPoint="4,4">
+                <GradientStop Offset="0" Color="Red" />
+                <GradientStop Offset="0.1" Color="Transparent" />
+              </LinearGradientBrush>
 
-          </Border.Background>
-        </Border>
+            </Border.Background>
+          </Border>
 
-        <Border Height="30" VerticalAlignment="Bottom">
-          <Border.Background>
-            <LinearGradientBrush MappingMode="Absolute" SpreadMethod="Repeat" StartPoint="0,0" EndPoint="4,4">
-              <GradientStop Offset="0" Color="Red" />
-              <GradientStop Offset="0.1" Color="Transparent" />
-            </LinearGradientBrush>
+          <Border Height="30" VerticalAlignment="Bottom">
+            <Border.Background>
+              <LinearGradientBrush MappingMode="Absolute" SpreadMethod="Repeat" StartPoint="0,0" EndPoint="4,4">
+                <GradientStop Offset="0" Color="Red" />
+                <GradientStop Offset="0.1" Color="Transparent" />
+              </LinearGradientBrush>
 
-          </Border.Background>
-        </Border>
+            </Border.Background>
+          </Border>
 
-        <Border Width="30" HorizontalAlignment="Left">
-          <Border.Background>
-            <LinearGradientBrush MappingMode="Absolute" SpreadMethod="Repeat" StartPoint="0,0" EndPoint="4,4">
-              <GradientStop Offset="0" Color="Red" />
-              <GradientStop Offset="0.1" Color="Transparent" />
-            </LinearGradientBrush>
+          <Border Width="30" HorizontalAlignment="Left">
+            <Border.Background>
+              <LinearGradientBrush MappingMode="Absolute" SpreadMethod="Repeat" StartPoint="0,0" EndPoint="4,4">
+                <GradientStop Offset="0" Color="Red" />
+                <GradientStop Offset="0.1" Color="Transparent" />
+              </LinearGradientBrush>
 
-          </Border.Background>
-        </Border>
+            </Border.Background>
+          </Border>
 
-        <Border Width="30" HorizontalAlignment="Right">
-          <Border.Background>
-            <LinearGradientBrush MappingMode="Absolute" SpreadMethod="Repeat" StartPoint="0,0" EndPoint="4,4">
-              <GradientStop Offset="0" Color="Red" />
-              <GradientStop Offset="0.1" Color="Transparent" />
-            </LinearGradientBrush>
+          <Border Width="30" HorizontalAlignment="Right">
+            <Border.Background>
+              <LinearGradientBrush MappingMode="Absolute" SpreadMethod="Repeat" StartPoint="0,0" EndPoint="4,4">
+                <GradientStop Offset="0" Color="Red" />
+                <GradientStop Offset="0.1" Color="Transparent" />
+              </LinearGradientBrush>
 
-          </Border.Background>
-        </Border>
+            </Border.Background>
+          </Border>
 
-      </Grid>
+        </Grid>
 
-    </Border>
+      </Border>
 
-    <lvc:CartesianChart
-      Grid.Row="1"
-      Grid.Column="1"
-      MinHeight="400"
-      Margin="10,0"
-      VerticalAlignment="Top"
-      LegendLocation="None">
-      <lvc:CartesianChart.AxisY>
-        <lvc:Axis Title="Tick count">
-          <lvc:Axis.Separator>
-            <lvc:Separator Stroke="#252525" />
-          </lvc:Axis.Separator>
-        </lvc:Axis>
-      </lvc:CartesianChart.AxisY>
+      <lvc:CartesianChart
+        Grid.Row="1"
+        Grid.Column="1"
+        MinHeight="400"
+        Margin="10,0"
+        VerticalAlignment="Top"
+        LegendLocation="None">
+        <lvc:CartesianChart.AxisY>
+          <lvc:Axis Title="Tick count">
+            <lvc:Axis.Separator>
+              <lvc:Separator Stroke="#252525" />
+            </lvc:Axis.Separator>
+          </lvc:Axis>
+        </lvc:CartesianChart.AxisY>
 
-      <lvc:CartesianChart.AxisX>
-        <lvc:Axis Title="Generation" Labels="{Binding Labels}">
-          <lvc:Axis.Separator>
-            <lvc:Separator Stroke="#252525" />
-          </lvc:Axis.Separator>
-        </lvc:Axis>
-      </lvc:CartesianChart.AxisX>
+        <lvc:CartesianChart.AxisX>
+          <lvc:Axis Title="Generation" Labels="{Binding Labels}">
+            <lvc:Axis.Separator>
+              <lvc:Separator Stroke="#252525" />
+            </lvc:Axis.Separator>
+          </lvc:Axis>
+        </lvc:CartesianChart.AxisX>
 
-      <lvc:CartesianChart.Series>
-        <lvc:LineSeries Title="Survivorship" Values="{Binding ChartData}" />
-      </lvc:CartesianChart.Series>
-    </lvc:CartesianChart>
-  </Grid>
+        <lvc:CartesianChart.Series>
+          <lvc:LineSeries Title="Survivorship" Values="{Binding ChartData}" />
+        </lvc:CartesianChart.Series>
+      </lvc:CartesianChart>
+    </Grid>
+
+  </Border>
 </Window>

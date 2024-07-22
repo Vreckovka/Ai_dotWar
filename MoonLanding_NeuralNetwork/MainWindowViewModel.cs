@@ -373,7 +373,7 @@ namespace MoonLanding_NeuralNetwork
 
       TargetManager.CreateAgents();
 
-      liveTargets = TargetManager.Agents.ToList();
+      liveTargets = new List<Target>();
 
       SucessCount = liveTargets.Count;
 
