@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System;
 using VNeuralNetwork;
+using System.Text.Json;
+using System.IO;
 
 namespace VNeuralNetwork
 {
@@ -12,6 +14,11 @@ namespace VNeuralNetwork
     public float[][][] Weights { get; set; } 
     
     public float Fitness { get; set; }
+
+    public NeuralNetwork()
+    {
+
+    }
 
     /// <summary>
     /// Initilizes and neural network with random weights
@@ -208,6 +215,21 @@ namespace VNeuralNetwork
         return -1;
       else
         return 0;
+    }
+
+    public void SaveNeuralNetwork(string path)
+    {
+      var json = JsonSerializer.Serialize(this);
+
+      File.WriteAllText(path, json);
+    }
+
+    public static NeuralNetwork LoadNeuralNetwork(string path)
+    {
+      var json = File.ReadAllText(path);
+      var net = JsonSerializer.Deserialize<NeuralNetwork>(json);
+
+      return new NeuralNetwork(net);
     }
   }
 }

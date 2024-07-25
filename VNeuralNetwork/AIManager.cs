@@ -19,7 +19,7 @@ namespace VNeuralNetwork
 
   public class AIManager<TAIModel> where TAIModel: AIObject
   {
-    private List<NeuralNetwork> networks = new List<NeuralNetwork>();
+    public List<NeuralNetwork> Networks { get; private set; } = new List<NeuralNetwork>();
     public List<TAIModel> Agents { get; set; } = new List<TAIModel>();
 
     private readonly IViewModelsFactory viewModelsFactory;
@@ -35,7 +35,7 @@ namespace VNeuralNetwork
       {
         NeuralNetwork net = new NeuralNetwork(layers);
         net.Mutate();
-        networks.Add(net);
+        Networks.Add(net);
       }
     }
 
@@ -45,9 +45,9 @@ namespace VNeuralNetwork
     {
       Agents.Clear();
 
-      for (int i = 0; i < networks.Count; i++)
+      for (int i = 0; i < Networks.Count; i++)
       {
-        AddAgent(networks[i]);
+        AddAgent(Networks[i]);
       }
     }
 
@@ -70,29 +70,52 @@ namespace VNeuralNetwork
 
     public void UpdateGeneration()
     {
-      networks = networks.OrderBy(x => x.Fitness).ToList();
+      Networks = Networks.OrderBy(x => x.Fitness).ToList();
 
-      for (int i = 0; i < networks.Count / 2; i++)
+      for (int i = 0; i < Networks.Count / 2; i++)
       {
-        var successIndex = i + (networks.Count / 2);
+        var successIndex = i + (Networks.Count / 2);
 
-        var sucessNet = new NeuralNetwork(networks[successIndex]);
+        var sucessNet = new NeuralNetwork(Networks[successIndex]);
         var failedNet = new NeuralNetwork(sucessNet);
         failedNet.Mutate();
 
-        networks[i] = failedNet;
-        networks[successIndex] = sucessNet;
+        Networks[i] = failedNet;
+        Networks[successIndex] = sucessNet;
 
         Agents[i].NeuralNetwork = failedNet;
         Agents[successIndex].NeuralNetwork = sucessNet;
       }
 
-      for (int i = 0; i < networks.Count; i++)
+      for (int i = 0; i < Networks.Count; i++)
       {
-        networks[i].Fitness = 0f;
+        Networks[i].Fitness = 0f;
       }
     }
 
     #endregion
+
+    public void LoadGeneration(string path)
+    {
+      var sucessNet = NeuralNetwork.LoadNeuralNetwork(path);
+
+      for (int i = 0; i < Networks.Count / 2; i++)
+      {
+        var successIndex = i + (Networks.Count / 2);
+        var failedNet = new NeuralNetwork(sucessNet);
+        failedNet.Mutate();
+
+        Networks[i] = failedNet;
+        Networks[successIndex] = sucessNet;
+
+        Agents[i].NeuralNetwork = failedNet;
+        Agents[successIndex].NeuralNetwork = sucessNet;
+      }
+
+      for (int i = 0; i < Networks.Count; i++)
+      {
+        Networks[i].Fitness = 0f;
+      }
+    }
   }
 }

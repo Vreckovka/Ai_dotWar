@@ -17,6 +17,7 @@ using VCore.WPF.ViewModels;
 using VCore.Standard.Factories.ViewModels;
 using System.Windows.Shapes;
 using LiveCharts.Wpf;
+using System.IO;
 
 namespace MoonLanding_NeuralNetwork
 {
@@ -34,11 +35,15 @@ namespace MoonLanding_NeuralNetwork
     int canvasHeight = 1000;
     SolidColorBrush ghostFill;
 
+    string session;
+
     public MainWindowViewModel(IViewModelsFactory viewModelsFactory) : base(viewModelsFactory)
     {
       ghostFill = (SolidColorBrush)new BrushConverter().ConvertFrom("#35ac60fc");
       GhostManager = new AIManager<Ghost>(viewModelsFactory);
       TargetManager = new AIManager<Target>(viewModelsFactory);
+
+      session = DateTime.Now.ToString("dd_MM_yyyy_hh_mm_ss");
     }
 
     #region ChartData
@@ -188,6 +193,9 @@ namespace MoonLanding_NeuralNetwork
 
       ScheduleAdGhosts();
 
+      ChartData.Add(TickCount);
+      Labels.Add(GenerationCount);
+
       Observable.Interval(TimeSpan.FromSeconds(0.001))
     .ObserveOn(Application.Current.Dispatcher)
     .Subscribe(async (x) =>
@@ -202,6 +210,8 @@ namespace MoonLanding_NeuralNetwork
       });
 
 
+      GhostManager.LoadGeneration(@"C:\Users\Roman Pecho\source\repos\MoonLanding_NeuralNetwork\MoonLanding_NeuralNetwork\bin\Debug\netcoreapp3.1\Trainings\23_07_2024_12_08_17\Ghosts\261.txt");
+      //TargetManager.LoadGeneration(@"C:\Users\Roman Pecho\source\repos\MoonLanding_NeuralNetwork\MoonLanding_NeuralNetwork\bin\Debug\netcoreapp3.1\Trainings\23_07_2024_12_08_17\Targets\261.txt");
     }
 
     private List<Target> liveTargets = new List<Target>();
@@ -209,10 +219,11 @@ namespace MoonLanding_NeuralNetwork
     {
       TickCount++;
 
-      foreach (var target in Targets.Where(x => x.Health <= 0).ToList())
+      foreach (var target in liveTargets.Where(x => x.Health <= 0).ToList())
       {
         canvas.Children.Remove(target.point);
         liveTargets.Remove(target);
+
         target.IsDead = true;
       }
 
@@ -222,6 +233,11 @@ namespace MoonLanding_NeuralNetwork
       var targetList = liveTargets.ToList();
 
       var threads = new List<Task>();
+
+      if(TickCount % 10 == 0)
+      {
+        ChartData[ChartData.Count - 1] = TickCount;
+      }
 
 
       var list = ghostsList.SplitList(35);
@@ -239,7 +255,7 @@ namespace MoonLanding_NeuralNetwork
         threads.Add(thread);
       }
 
-      var listT = Targets.SplitList(25);
+      var listT = liveTargets.SplitList(25);
 
       foreach (var split in listT)
       {
@@ -278,10 +294,10 @@ namespace MoonLanding_NeuralNetwork
         var newX = Canvas.GetLeft(target.point) + target.vector.X;
         var newY = Canvas.GetTop(target.point) + target.vector.Y;
 
-        if (random.Next(0, 10000) < 2)
+        if (random.Next(0, 10000) < 2 && liveTargets.Count < 100)
         {
           AddTargetToUi(TargetManager.AddAgent(new NeuralNetwork(bestTarget.NeuralNetwork)));
-          target.NeuralNetwork.AddFitness(1000);
+          //target.NeuralNetwork.AddFitness(1000);
         }
 
         target.ChangeColor();
@@ -344,12 +360,16 @@ namespace MoonLanding_NeuralNetwork
         BestTickCount = TickCount;
       }
 
-      ChartData.Add(TickCount);
-      Labels.Add(GenerationCount);
+      ChartData[ChartData.Count - 1] = TickCount;
 
+
+      SaveProgress();
 
       GenerationCount++;
       TickCount = 0;
+
+      ChartData.Add(TickCount);
+      Labels.Add(GenerationCount);
 
       GhostManager.UpdateGeneration();
       TargetManager.UpdateGeneration();
@@ -358,9 +378,28 @@ namespace MoonLanding_NeuralNetwork
       CreateGhosts();
 
       ScheduleAdGhosts();
+
+     
     }
 
     #endregion
+
+    public void SaveProgress()
+    {
+      var bestGhost = GhostManager.Networks.OrderByDescending(x => x.Fitness).FirstOrDefault();
+      var bestTarget = TargetManager.Networks.OrderByDescending(x => x.Fitness).FirstOrDefault();
+
+      
+
+      var gfolder = System.IO.Path.Combine("Trainings", session, "Ghosts");
+      var tfolder = System.IO.Path.Combine("Trainings", session, "Targets");
+
+      Directory.CreateDirectory(gfolder);
+      Directory.CreateDirectory(tfolder);
+
+      bestGhost.SaveNeuralNetwork(System.IO.Path.Combine(gfolder, $"{GenerationCount}.txt"));
+      bestTarget.SaveNeuralNetwork(System.IO.Path.Combine(tfolder, $"{GenerationCount}.txt"));
+    }
 
     #region CreateTargets
 

@@ -15,7 +15,7 @@ namespace MoonLanding_NeuralNetwork
     Ellipse elipse = new Ellipse();
 
     public double Health { get; set; } = 255;
-    public int size = 15;
+    public int size = 10;
 
     public Target(NeuralNetwork neuralNetwork) : base(neuralNetwork)
     {
@@ -75,16 +75,10 @@ namespace MoonLanding_NeuralNetwork
 
       float[] output = NeuralNetwork.FeedForward(inputs);
 
-      vector.X = output[0] + (output[2] * 3.25f);
-      vector.Y = output[1] + (output[3] * 3.22f);
+      vector.X = output[0] + (output[2] * 3.5f);
+      vector.Y = output[1] + (output[3] * 3.5f);
 
-      if (IsDead)
-      {
-        NeuralNetwork.AddFitness(-1000);
-        return;
-      }
-
-
+    
       if (actualPoint.X > min &&
         actualPoint.X + width < 1000 - min &&
         actualPoint.Y > min &&
@@ -103,7 +97,7 @@ namespace MoonLanding_NeuralNetwork
       }
       else
       {
-        Health -= 10;
+        Health -= 20;
       }
     }
 

@@ -20,8 +20,8 @@ namespace MoonLanding_NeuralNetwork
     public Ghost(NeuralNetwork neuralNetwork) : base(neuralNetwork)
     {
       var ellipse = new Ellipse();
-      ellipse.Width = 10;
-      ellipse.Height = 10;
+      ellipse.Width = 8;
+      ellipse.Height = 8;
 
       point = ellipse;
 
@@ -71,8 +71,8 @@ namespace MoonLanding_NeuralNetwork
 
       float[] output = NeuralNetwork.FeedForward(inputs);
 
-      vector.X = output[0] + (output[2] * 1f);
-      vector.Y = output[1] + (output[3] * 1f);
+      vector.X = output[0] + (output[2] * 0.25f);
+      vector.Y = output[1] + (output[3] * 0.25f);
 
       if (Target != null)
       {
@@ -83,7 +83,7 @@ namespace MoonLanding_NeuralNetwork
 
           if (target is Target targetTarget)
           {
-            targetTarget.Health -= 3;
+            targetTarget.Health -= 2.5;
           }
         }
       }
