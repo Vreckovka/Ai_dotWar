@@ -12,5 +12,12 @@ namespace VNeuralNetwork
 
       return (float)(minValue + (next * (maxValue - minValue)));
     }
+
+    public static double RandomNumberBetween(double minValue, double maxValue)
+    {
+      var next = random.NextDouble();
+
+      return minValue + (next * (maxValue - minValue));
+    }
   }
 }

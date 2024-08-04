@@ -18,6 +18,7 @@ using VCore.Standard.Factories.ViewModels;
 using System.Windows.Shapes;
 using LiveCharts.Wpf;
 using System.IO;
+using TradingBroker.MachineLearning;
 
 namespace MoonLanding_NeuralNetwork
 {
@@ -183,10 +184,13 @@ namespace MoonLanding_NeuralNetwork
 
     #endregion
 
+
+
     public void Start()
     {
+     
       GhostManager.Initilize(new int[] { 4, 8, 8, 4 }, ghostsCount);
-      TargetManager.Initilize(new int[] { inputNumber, inputNumber * 2, inputNumber * 2, 4 }, targetCount);  
+      TargetManager.Initilize(new int[] { inputNumber, inputNumber * 2, inputNumber * 2, 4 }, targetCount);
 
       CreateGhosts();
       CreateTargets();
@@ -209,8 +213,9 @@ namespace MoonLanding_NeuralNetwork
         RaisePropertyChanged(nameof(Labels));
       });
 
+     
 
-      GhostManager.LoadGeneration(@"C:\Users\Roman Pecho\source\repos\MoonLanding_NeuralNetwork\MoonLanding_NeuralNetwork\bin\Debug\netcoreapp3.1\Trainings\23_07_2024_12_08_17\Ghosts\261.txt");
+      //GhostManager.LoadGeneration(@"C:\Users\Roman Pecho\source\repos\MoonLanding_NeuralNetwork\MoonLanding_NeuralNetwork\bin\Debug\netcoreapp3.1\Trainings\23_07_2024_12_08_17\Ghosts\261.txt");
       //TargetManager.LoadGeneration(@"C:\Users\Roman Pecho\source\repos\MoonLanding_NeuralNetwork\MoonLanding_NeuralNetwork\bin\Debug\netcoreapp3.1\Trainings\23_07_2024_12_08_17\Targets\261.txt");
     }
 
@@ -234,7 +239,7 @@ namespace MoonLanding_NeuralNetwork
 
       var threads = new List<Task>();
 
-      if(TickCount % 10 == 0)
+      if (TickCount % 10 == 0)
       {
         ChartData[ChartData.Count - 1] = TickCount;
       }
@@ -379,7 +384,7 @@ namespace MoonLanding_NeuralNetwork
 
       ScheduleAdGhosts();
 
-     
+
     }
 
     #endregion
@@ -389,7 +394,7 @@ namespace MoonLanding_NeuralNetwork
       var bestGhost = GhostManager.Networks.OrderByDescending(x => x.Fitness).FirstOrDefault();
       var bestTarget = TargetManager.Networks.OrderByDescending(x => x.Fitness).FirstOrDefault();
 
-      
+
 
       var gfolder = System.IO.Path.Combine("Trainings", session, "Ghosts");
       var tfolder = System.IO.Path.Combine("Trainings", session, "Targets");

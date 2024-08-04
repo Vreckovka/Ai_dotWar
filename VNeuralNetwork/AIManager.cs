@@ -14,29 +14,26 @@ namespace VNeuralNetwork
     {
       NeuralNetwork = neuralNetwork;
     }
-
   }
 
-  public class AIManager<TAIModel> where TAIModel: AIObject
+  public class AIManager<TAIModel> where TAIModel : AIObject
   {
-    public List<NeuralNetwork> Networks { get; private set; } = new List<NeuralNetwork>();
+    GeneticAlgoNeuralNetwork genetic;
+    public List<NeuralNetwork> Networks => genetic.Population.Select(x => x.NeuralNetwork).ToList();
     public List<TAIModel> Agents { get; set; } = new List<TAIModel>();
 
-    private readonly IViewModelsFactory viewModelsFactory;
+    protected readonly IViewModelsFactory viewModelsFactory;
 
     public AIManager(IViewModelsFactory viewModelsFactory)
     {
       this.viewModelsFactory = viewModelsFactory ?? throw new ArgumentNullException(nameof(viewModelsFactory));
     }
 
-    public void Initilize(int[] layers, int agentCount)
+    public virtual void Initilize(int[] layers, int agentCount)
     {
-      for (int i = 0; i < agentCount; i++)
-      {
-        NeuralNetwork net = new NeuralNetwork(layers);
-        net.Mutate();
-        Networks.Add(net);
-      }
+      genetic = new GeneticAlgoNeuralNetwork(agentCount, layers);
+
+      genetic.SeedGeneration();
     }
 
     #region CreateAgents
@@ -68,28 +65,13 @@ namespace VNeuralNetwork
 
     #region UpdateGeneration
 
-    public void UpdateGeneration()
+    public virtual void UpdateGeneration()
     {
-      Networks = Networks.OrderBy(x => x.Fitness).ToList();
+      genetic.CreateNewGeneration();
 
-      for (int i = 0; i < Networks.Count / 2; i++)
+      for (int i = 0; i < genetic.Population.Count; i++)
       {
-        var successIndex = i + (Networks.Count / 2);
-
-        var sucessNet = new NeuralNetwork(Networks[successIndex]);
-        var failedNet = new NeuralNetwork(sucessNet);
-        failedNet.Mutate();
-
-        Networks[i] = failedNet;
-        Networks[successIndex] = sucessNet;
-
-        Agents[i].NeuralNetwork = failedNet;
-        Agents[successIndex].NeuralNetwork = sucessNet;
-      }
-
-      for (int i = 0; i < Networks.Count; i++)
-      {
-        Networks[i].Fitness = 0f;
+        Agents[i].NeuralNetwork = genetic.Population[i].NeuralNetwork;
       }
     }
 
@@ -99,23 +81,13 @@ namespace VNeuralNetwork
     {
       var sucessNet = NeuralNetwork.LoadNeuralNetwork(path);
 
-      for (int i = 0; i < Networks.Count / 2; i++)
+      foreach(var pop in genetic.Population)
       {
-        var successIndex = i + (Networks.Count / 2);
-        var failedNet = new NeuralNetwork(sucessNet);
-        failedNet.Mutate();
-
-        Networks[i] = failedNet;
-        Networks[successIndex] = sucessNet;
-
-        Agents[i].NeuralNetwork = failedNet;
-        Agents[successIndex].NeuralNetwork = sucessNet;
+        pop.NeuralNetwork = sucessNet;
+        pop.UpdateDNA();
       }
 
-      for (int i = 0; i < Networks.Count; i++)
-      {
-        Networks[i].Fitness = 0f;
-      }
+      UpdateGeneration();
     }
   }
 }

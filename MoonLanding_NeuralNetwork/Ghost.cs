@@ -6,12 +6,13 @@ using System.Text;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using TradingBroker.MachineLearning;
 using VNeuralNetwork;
 
 namespace MoonLanding_NeuralNetwork
 {
 
-
+  
   public class Ghost : AIWpfObject
   {
     public AIWpfObject Target;
@@ -33,12 +34,12 @@ namespace MoonLanding_NeuralNetwork
 
     public override void Update(IEnumerable<AIWpfObject> targets, IEnumerable<AIWpfObject> siblings)
     {
-      float[] inputs = new float[NeuralNetwork.Layers[0]];
+      float[] inputs = new float[NeuralNetwork.Layers[0].Neurons[0].Weights.Count];
 
       var actualPoint = position;
       var castedTarget = (Target)Target;
 
-      
+
       if (random.Next(0, 100) < 5)
       {
         Target = null;
@@ -71,8 +72,8 @@ namespace MoonLanding_NeuralNetwork
 
       float[] output = NeuralNetwork.FeedForward(inputs);
 
-      vector.X = output[0] + (output[2] * 0.25f);
-      vector.Y = output[1] + (output[3] * 0.25f);
+      vector.X = output[0] + (output[2] * 1f);
+      vector.Y = output[1] + (output[3] * 1f);
 
       if (Target != null)
       {
