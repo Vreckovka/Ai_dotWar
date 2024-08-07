@@ -72,8 +72,8 @@ namespace MoonLanding_NeuralNetwork
 
       float[] output = NeuralNetwork.FeedForward(inputs);
 
-      vector.X = output[0] + (output[2] * 1f);
-      vector.Y = output[1] + (output[3] * 1f);
+      vector.X = output[0] + (output[2] * 0.5f);
+      vector.Y = output[1] + (output[3] * 0.5f);
 
       if (Target != null)
       {

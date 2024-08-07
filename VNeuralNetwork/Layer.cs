@@ -4,15 +4,20 @@
 
   public class Layer
   {
-    public List<Neuron> Neurons { get; private set; }
+    public List<Neuron> Neurons { get; set; }
 
-    public int neuronCount;
-    public int inputCount;
+    public int NneuronCount { get; set; }
+    public int InputCount { get; set; }
+
+    public Layer()
+    {
+
+    }
 
     public Layer(int neuronCount, int inputCount)
     {
-      this.neuronCount = neuronCount;
-      this.inputCount = inputCount;
+      this.NneuronCount = neuronCount;
+      this.InputCount = inputCount;
 
       Neurons = new List<Neuron>();
       for (int i = 0; i < neuronCount; i++)

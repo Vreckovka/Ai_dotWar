@@ -36,7 +36,7 @@
     {
       base.CreateNewGeneration();
 
-      foreach(var gene in Population)
+      foreach (var gene in Population)
       {
         gene.UpdateNeuralNetwork();
       }

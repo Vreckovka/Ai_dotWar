@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using VCore.Standard.Modularity.Interfaces;
 using LiveCharts;
+using VNeuralNetwork;
 
 namespace MoonLanding_NeuralNetwork
 {
@@ -50,8 +51,9 @@ namespace MoonLanding_NeuralNetwork
     {
       if(DataContext is MainWindowViewModel viewModel)
       {
-        viewModel.canvas = canvas;
-        viewModel.Start();
+        viewModel.RocketSimulator.canvas = canvas;
+        viewModel.RocketSimulator.Start();
+
       }
     }
   }

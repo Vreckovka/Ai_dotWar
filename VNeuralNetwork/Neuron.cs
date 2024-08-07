@@ -5,23 +5,28 @@
 
   public class Neuron
   {
-    public List<double> Weights { get; private set; }
-    public double Bias { get; set; }
+    public List<float> Weights { get; set; }
+    public float Bias { get; set; }
+
+    public Neuron()
+    {
+
+    }
 
     public Neuron(int inputCount)
     {
       var rand = new Random();
-      Weights = new List<double>();
+      Weights = new List<float>();
       for (int i = 0; i < inputCount; i++)
       {
-        Weights.Add(rand.NextDouble() * 2 - 1); // Initialize weights between -1 and 1
+        Weights.Add((float)rand.NextDouble() * 2 - 1); // Initialize weights between -1 and 1
       }
-      Bias = rand.NextDouble() * 2 - 1; // Initialize bias between -1 and 1
+      Bias = (float)rand.NextDouble() * 2 - 1; // Initialize bias between -1 and 1
     }
 
     public Neuron(Neuron neuron)
     {
-      Weights = new List<double>();
+      Weights = new List<float>();
 
       for (int i = 0; i < neuron.Weights.Count; i++)
       {
@@ -39,14 +44,14 @@
         activation += inputs[i] * Weights[i];
       }
 
-      return Math.Tanh(activation);
+      return Tanh(activation);
 
       //return Sigmoid(activation);
     }
 
-    private double Sigmoid(double x)
+    private double Tanh(double x)
     {
-      return 1.0 / (1.0 + Math.Exp(-x));
+      return Math.Tanh(x);
     }
   }
 }

@@ -23,14 +23,15 @@
 
     #region GetRandomGene
 
-    private Neuron GetRandomGene(Neuron neuron, double mutationRate)
+    Random random = new Random();
+    private Neuron GetRandomGene(Neuron neuron, float mutationRate)
     {
       var newNeuron = new Neuron(neuron);
-      var mutationAmount = 0.5;
+      var mutationAmount = 0.5f;
 
       if (getRandomDouble() < mutationRate)
       {
-        newNeuron.Bias += getRandomDouble() * mutationAmount * 2 - mutationAmount;
+        newNeuron.Bias += (float)getRandomDouble() * mutationAmount * 2 - mutationAmount;
       }
 
       for (int i = 0; i < newNeuron.Weights.Count; i++)
@@ -39,28 +40,22 @@
         {
           double weight = newNeuron.Weights[i];
 
-          float randomNumber = Helper.RandomNumberBetween(0, 100);
+          var randomNumber = random.Next(0,7);
 
-          if (randomNumber <= 2)
-          {
+          if (randomNumber <= 1)
             weight *= -1f;
-          }
-          else if (randomNumber <= 4)
-          {
-            weight = Helper.RandomNumberBetween(-0.5f, 0.5f);
-          }
-          else if (randomNumber <= 6)
-          {
+          else if (randomNumber <= 2)
+            weight = Helper.RandomNumberBetween(-1f, 1f);
+          else if (randomNumber <= 3)
             weight *= Helper.RandomNumberBetween(0f, 1f) + 1f;
-          }
-          else if (randomNumber <= 8)
-          {
+          else if (randomNumber <= 4)
             weight *= Helper.RandomNumberBetween(0f, 1f);
-          }
-          else
-            weight += getRandomDouble() * mutationAmount * 2 - mutationAmount;
+          else if (randomNumber <= 5)
+            weight += (getRandomDouble() * 2 - 1) * mutationAmount;
+          else if (randomNumber <= 6)
+            weight = GaussianRandom(0, mutationAmount);
 
-          newNeuron.Weights[i] = weight;
+          newNeuron.Weights[i] = (float)weight;
         }
       }
 
@@ -86,9 +81,19 @@
     protected override float GetScore(Neuron[] genes)
     {
       return NeuralNetwork.Fitness;
-    } 
+    }
 
     #endregion
+
+    private double GaussianRandom(double mean, double stdDev)
+    {
+      double u1 = getRandomDouble();
+      double u2 = getRandomDouble();
+      double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+      return mean + stdDev * randStdNormal;
+    }
+
+    #region UpdateNeuralNetwork
 
     public void UpdateNeuralNetwork()
     {
@@ -105,6 +110,10 @@
       }
     }
 
+    #endregion
+
+    #region UpdateDNA
+
     public void UpdateDNA()
     {
       int geneIndex = 0;
@@ -119,5 +128,8 @@
         }
       }
     }
+
+    #endregion
+
   }
 }
