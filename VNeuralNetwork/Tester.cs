@@ -1,9 +1,15 @@
-﻿using System;
+﻿using SharpNeat.Core;
+using SharpNeat.Decoders;
+using SharpNeat.Decoders.Neat;
+using SharpNeat.Genomes.Neat;
+using SharpNeat.Phenomes;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using VCore.Standard.Factories.ViewModels;
+using VNeuralNetwork.NEAT;
 
 namespace VNeuralNetwork
 {
@@ -19,7 +25,10 @@ namespace VNeuralNetwork
     public void Test()
     {
       //TestBackPropagation();
-      TestGeneticAlgorithm();
+      //TestGeneticAlgorithm();
+
+      //TestNeatAlgorithm();
+      TestNeatSharp();
     }
 
     #region TestBackPropagation
@@ -63,10 +72,11 @@ namespace VNeuralNetwork
       manager.InitializeManager(new int[] { 3, 6, 6, 1 }, 100);
       manager.CreateAgents();
 
-      float fitness = -100;
+      double fitness = -100;
       NeuralNetwork net = null;
 
       var random = new Random();
+
 
       var list = new List<Dictionary<float[], float>>()
       {
@@ -81,31 +91,8 @@ namespace VNeuralNetwork
       };
 
 
-
-      while (fitness < 7.5)
+      while (fitness < -0.6)
       {
-        if (manager.Generation % 100 == 0)
-        {
-          if (manager.Generation > 0)
-            manager.UpdateGeneration();
-
-          foreach (var agent in manager.Agents)
-          {
-            for (int i = 0; i < list.Count; i++)
-            {
-              var randomIndex = random.Next(0, list.Count);
-
-              var values = list[randomIndex].Keys.First();
-              var result = list[randomIndex].Values.First();
-
-              AddFitnessLoss(agent, values, result);
-            }
-          }
-
-        }
-
-        manager.UpdateGeneration();
-
         foreach (var agent in manager.Agents)
         {
           for (int i = 0; i < list.Count; i++)
@@ -113,17 +100,21 @@ namespace VNeuralNetwork
             var values = list[i].Keys.First();
             var result = list[i].Values.First();
 
-            AddFitnessLoss(agent, values, result);
+            var output = agent.NeuralNetwork.FeedForward(values);
+
+            agent.NeuralNetwork.Fitness += (float)AddFitnessLoss(output, result);
           }
         }
 
         net = manager.Agents
-        .OrderByDescending(x => x.NeuralNetwork.Fitness)
-        .First().NeuralNetwork;
+       .OrderByDescending(x => x.NeuralNetwork.Fitness)
+       .First().NeuralNetwork;
 
         fitness = net.Fitness;
 
         Debug.WriteLine($"Generation {manager.Generation} Fitness {fitness}");
+
+        manager.UpdateGeneration();
       }
 
 
@@ -141,16 +132,163 @@ namespace VNeuralNetwork
 
     #endregion
 
-    #region AddFitnessLoss
+    #region TestNeatAlgorithm
 
-    private void AddFitnessLoss(AIObject agent, float[] inputs, float expected)
+    public void TestNeatAlgorithm()
     {
-      var output = agent.NeuralNetwork.FeedForward(inputs);
-      var loss = Math.Abs(expected - output[0]) * -1;
+      var neat = new NEATAlgorithm(50, 3, 1);
+      Genome net = null;
 
-      agent.NeuralNetwork.AddFitness(1 + loss);
+      double fitness = -100;
+      var random = new Random();
+
+      var list = new List<Dictionary<double[], double>>()
+      {
+        new Dictionary<double[], double>(){ { new double[] { 0, 0, 0 }, 0 } },
+        new Dictionary<double[], double>(){ { new double[] { 0, 0, 1 }, 1 } },
+        new Dictionary<double[], double>(){{ new double[] { 0, 1, 0 }, 1 } },
+        new Dictionary<double[], double>(){{ new double[] { 0, 1, 1 }, 0  } },
+        new Dictionary<double[], double>(){{ new double[] { 1, 0, 0 }, 1  } },
+        new Dictionary<double[], double>(){{ new double[] { 1, 0, 1 }, 0  } },
+        new Dictionary<double[], double>(){{ new double[] { 1, 1, 0 }, 0  } },
+        new Dictionary<double[], double>(){{ new double[] { 1, 1, 1 }, 1  } },
+      };
+
+      var testCases = new List<(double[] inputs, double expectedOutput)>
+        {
+            (new double[] {0, 0}, 0),
+            (new double[] {0, 1}, 1),
+            (new double[] {1, 0}, 1),
+            (new double[] {1, 1}, 0)
+        };
+
+
+      while (neat.Generation < 1000)
+      {
+
+        foreach (var agent in neat.Genomes)
+        {
+          for (int i = 0; i < list.Count; i++)
+          {
+            var values = list[i].Keys.First();
+            var result = list[i].Values.First();
+
+
+            var output = agent.FeedForward(values);
+
+            agent.Fitness += (float)AddFitnessLoss(output, result);
+          }
+        }
+
+        net = neat.Genomes
+       .OrderByDescending(x => x.Fitness)
+       .First();
+
+        fitness = net.Fitness;
+
+        Debug.WriteLine($"Generation {neat.Generation} Fitness {fitness}");
+
+        neat.UpdateGeneration();
+      }
+
+
+
+      Debug.WriteLine($"Fitness -> {fitness}");
+      Debug.WriteLine($"[0, 0, 0] -> {net.FeedForward(new double[] { 0, 0, 0 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[0, 0, 1] -> {net.FeedForward(new double[] { 0, 0, 1 })[0]:0.000} -> 1");
+      Debug.WriteLine($"[0, 1, 0] -> {net.FeedForward(new double[] { 0, 1, 0 })[0]:0.000} -> 1");
+      Debug.WriteLine($"[0, 1, 1] -> {net.FeedForward(new double[] { 0, 1, 1 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[1, 0, 0] -> {net.FeedForward(new double[] { 1, 0, 0 })[0]:0.000} -> 1");
+      Debug.WriteLine($"[1, 0, 1] -> {net.FeedForward(new double[] { 1, 0, 1 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[1, 1, 0] -> {net.FeedForward(new double[] { 1, 1, 0 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[1, 1, 1] -> {net.FeedForward(new double[] { 1, 1, 1 })[0]:0.000} -> 1");
     }
 
     #endregion
+
+    public void TestNeatSharp()
+    {
+      var ea = new XorExperiment().Init();
+      double fitness = -100;
+      IBlackBox net = null;
+      IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateAcyclicScheme());
+
+      while (ea.CurrentChampGenome.EvaluationInfo.Fitness < 7.5)
+      {
+        ea.UpdateGeneration();
+
+        Debug.WriteLine($"Generation {ea.CurrentGeneration} Fitness { ea.CurrentChampGenome.EvaluationInfo.Fitness}");
+      }
+
+
+      Debug.WriteLine($"Fitness -> {fitness}");
+
+      net = genomeDecoder.Decode(ea.CurrentChampGenome);
+
+      Debug.WriteLine($"[0, 0, 0] -> {FeedForward(net,new double[] { 0, 0, 0 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[0, 0, 1] -> {FeedForward(net, new double[] { 0, 0, 1 })[0]:0.000} -> 1");
+      Debug.WriteLine($"[0, 1, 0] -> {FeedForward(net, new double[] { 0, 1, 0 })[0]:0.000} -> 1");
+      Debug.WriteLine($"[0, 1, 1] -> {FeedForward(net, new double[] { 0, 1, 1 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[1, 0, 0] -> {FeedForward(net, new double[] { 1, 0, 0 })[0]:0.000} -> 1");
+      Debug.WriteLine($"[1, 0, 1] -> {FeedForward(net, new double[] { 1, 0, 1 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[1, 1, 0] -> {FeedForward(net, new double[] { 1, 1, 0 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[1, 1, 1] -> {FeedForward(net, new double[] { 1, 1, 1 })[0]:0.000} -> 1");
+    }
+
+
+    private double[] FeedForward(IBlackBox blackBox, double[] inputs)
+    {
+      for (int i = 0; i < inputs.Length; i++)
+      {
+        blackBox.InputSignalArray[i] = inputs[i];
+      }
+
+      blackBox.Activate();
+
+     var result =  new double[] { blackBox.OutputSignalArray[0] };
+
+      blackBox.ResetState();
+
+      return result;
+    }
+
+    #region AddFitnessLoss
+
+    private double AddFitnessLoss(float[] output, float expected)
+    {
+      return Math.Abs(expected - output[0]) * -1;
+    }
+
+    #endregion
+
+    #region AddFitnessLoss
+
+    private double AddFitnessLoss(double[] output, double expected)
+    {
+      return 1 + Math.Abs(expected - output[0]) * -1;
+    }
+
+    #endregion
+
+    private double TestFitness(double[] output, double expectedOutput)
+    {
+      // Define the XOR problem input-output pairs
+
+
+
+
+      // Get the actual output
+      double actualOutput = output[0];
+
+      // Compute the absolute error
+      double error = Math.Abs(expectedOutput - actualOutput);
+
+
+
+      // Return fitness (inverse of total error)
+      // Note: You might want to scale or adjust the fitness score as needed
+      return 1.0f / (1.0f + error); // Adding 1 to avoid division by zero
+    }
   }
 }
+

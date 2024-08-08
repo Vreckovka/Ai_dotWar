@@ -1,7 +1,10 @@
 ﻿namespace VNeuralNetwork
 {
+  using System;
+  using System.Collections.Generic;
   using System.Linq;
   using TradingBroker.MachineLearning;
+
 
   public class GeneticAlgoNeuralNetwork : BaseGeneticAlgorithm<Neuron, NeuralNetworkDNA>
   {

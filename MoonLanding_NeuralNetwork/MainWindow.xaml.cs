@@ -51,8 +51,8 @@ namespace MoonLanding_NeuralNetwork
     {
       if(DataContext is MainWindowViewModel viewModel)
       {
-        viewModel.RocketSimulator.canvas = canvas;
-        viewModel.RocketSimulator.Start();
+        viewModel.GhostSimulator.canvas = canvas;
+        viewModel.GhostSimulator.Start();
 
       }
     }

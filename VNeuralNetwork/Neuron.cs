@@ -3,6 +3,12 @@
   using System;
   using System.Collections.Generic;
 
+  public class NeuronConnection
+  {
+    public int StartNode { get; set; }
+    public int EndNode { get; set; }
+    public double Weight { get; set; }
+  }
   public class Neuron
   {
     public List<float> Weights { get; set; }

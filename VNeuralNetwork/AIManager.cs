@@ -123,7 +123,7 @@ namespace VNeuralNetwork
 
       UpdateGeneration();
       Generation = 0;
-    } 
+    }
 
     #endregion
   }
