@@ -221,5 +221,6 @@ namespace SharpNeat.Phenomes.NeuralNets
             // Unnecessary for this implementation. The node activation signal state is completely overwritten on each activation.
         }
     #endregion
-  }  
+  }
+  
 }

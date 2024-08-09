@@ -1,4 +1,6 @@
-﻿namespace VNeuralNetwork
+﻿using SharpNeat.Genomes.Neat;
+
+namespace VNeuralNetwork
 {
   public interface INeuralNetwork
   {

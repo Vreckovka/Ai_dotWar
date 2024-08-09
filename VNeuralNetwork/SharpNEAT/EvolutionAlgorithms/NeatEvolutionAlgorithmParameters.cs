@@ -19,7 +19,7 @@ namespace SharpNeat.EvolutionAlgorithms
     {
         #region Constants
 
-        const int DefaultSpecieCount = 10;
+        const int DefaultSpecieCount = 20;
         const double DefaultElitismProportion = 0.2;
         const double DefaultSelectionProportion = 0.2;
 

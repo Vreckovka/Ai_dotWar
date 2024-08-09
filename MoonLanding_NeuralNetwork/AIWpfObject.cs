@@ -35,7 +35,7 @@ namespace MoonLanding_NeuralNetwork
     public double width;
     public double height;
 
-    public AIWpfObject(NeuralNetwork neuralNetwork) : base(neuralNetwork)
+    public AIWpfObject(INeuralNetwork neuralNetwork) : base(neuralNetwork)
     {
     }
 

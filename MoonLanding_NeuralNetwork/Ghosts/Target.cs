@@ -17,7 +17,7 @@ namespace MoonLanding_NeuralNetwork
     public double Health { get; set; } = 255;
     public int size = 10;
 
-    public Target(NeuralNetwork neuralNetwork) : base(neuralNetwork)
+    public Target(INeuralNetwork neuralNetwork) : base(neuralNetwork)
     {
 
       var grid = new Grid();
@@ -86,7 +86,7 @@ namespace MoonLanding_NeuralNetwork
       {
         if (Math.Abs(vector.X) <= 0 && Math.Abs(vector.Y) <= 0)
         {
-          Health -= 0.1;
+          Health -= 0.5;
         }
         else
         {

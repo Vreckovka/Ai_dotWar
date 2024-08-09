@@ -55,9 +55,9 @@ namespace NeuralNetwork_WPF.Ghosts
 
     #region ChartData
 
-    private ChartValues<int> chartData = new ChartValues<int>();
+    private ChartValues<float> chartData = new ChartValues<float>();
 
-    public ChartValues<int> ChartData
+    public ChartValues<float> ChartData
     {
       get { return chartData; }
       set
@@ -204,8 +204,8 @@ namespace NeuralNetwork_WPF.Ghosts
 
       ScheduleAdGhosts();
 
-      ChartData.Add(TickCount);
-      Labels.Add(GenerationCount);
+      //ChartData.Add(TickCount);
+      //Labels.Add(GenerationCount);
 
       Observable.Interval(TimeSpan.FromSeconds(0.001))
     .ObserveOn(Application.Current.Dispatcher)
@@ -248,11 +248,7 @@ namespace NeuralNetwork_WPF.Ghosts
 
       var threads = new List<Task>();
 
-      if (TickCount % 10 == 0)
-      {
-        ChartData[ChartData.Count - 1] = TickCount;
-      }
-
+  
 
       var list = ghostsList.SplitList(35);
 
@@ -324,7 +320,7 @@ namespace NeuralNetwork_WPF.Ghosts
 
         if (random.Next(0, 10000) < 2 && liveTargets.Count < 100)
         {
-          AddTargetToUi(TargetManager.AddAgent(new NeatGenome((NeatGenome)bestTarget.NeuralNetwork,0,0)));
+          //AddTargetToUi(TargetManager.AddAgent(new NeatGenome((NeatGenome)bestTarget.NeuralNetwork,0,0)));
           //target.NeuralNetwork.AddFitness(1000);
         }
 
@@ -384,15 +380,12 @@ namespace NeuralNetwork_WPF.Ghosts
         BestTickCount = TickCount;
       }
 
-      ChartData[ChartData.Count - 1] = TickCount;
-
-
       SaveProgress();
 
       GenerationCount++;
       TickCount = 0;
 
-      ChartData.Add(TickCount);
+      ChartData.Add(TargetManager.Agents.Max(x => x.NeuralNetwork.Fitness));
       Labels.Add(GenerationCount);
 
       GhostManager.UpdateGeneration();

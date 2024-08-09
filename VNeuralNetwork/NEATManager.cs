@@ -10,6 +10,7 @@ using SharpNeat.Network;
 using SharpNeat.Phenomes;
 using SharpNeat.Phenomes.NeuralNets;
 using VCore.Standard.Factories.ViewModels;
+using VCore.Standard.Helpers;
 
 namespace VNeuralNetwork
 {
@@ -22,6 +23,14 @@ namespace VNeuralNetwork
 
     public void UpdateGeneration()
     {
+      this.CreateNewGeneration();
+      GenomeList.OfType<NeatGenome>().ForEach(x => x.Fitness = 0);
+
+      _currentGeneration++;
+    }
+
+    public void EvaluateGeneration()
+    {
       this.PerformOneGeneration();
 
       _currentGeneration++;
@@ -30,7 +39,7 @@ namespace VNeuralNetwork
 
 
 
-  public class NEATManager<TAIModel>
+  public class NEATManager<TAIModel> where TAIModel : AIObject
   {
     NeatAlgorithm neatAlgorithm;
     IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateAcyclicScheme());
@@ -50,14 +59,18 @@ namespace VNeuralNetwork
 
     #region InitializeManager
 
+    private int inputCount;
+
     public void InitializeManager(int inputCount, int outputCount, int agentCount)
     {
+      this.inputCount = inputCount;
       var _neatGenomeParams = new NeatGenomeParameters();
       _neatGenomeParams.FeedforwardOnly = true;
-      _neatGenomeParams.ActivationFn = LeakyReLU.__DefaultInstance;
+      _neatGenomeParams.ActivationFn = TanH.__DefaultInstance;
 
       // Create the evolution algorithm.
       NeatAlgorithm ea = new NeatAlgorithm();
+
 
       // Create a genome factory appropriate for the experiment.
       IGenomeFactory<NeatGenome> genomeFactory = new NeatGenomeFactory(inputCount, outputCount, _neatGenomeParams);
@@ -65,16 +78,9 @@ namespace VNeuralNetwork
       // Create an initial population of randomly generated genomes.
       List<NeatGenome> genomeList = genomeFactory.CreateGenomeList(agentCount, 0u);
 
-      // Create a genome list evaluator. This packages up the genome decoder with the genome evaluator.
-      IGenomeListEvaluator<NeatGenome> innerEvaluator = new Evaluator();
 
-      // Wrap the list evaluator in a 'selective' evaluator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
-      // that were in the population in previous generations (elite genomes). This is determined by examining each genome's evaluation info object.
-      IGenomeListEvaluator<NeatGenome> selectiveEvaluator = new SelectiveGenomeListEvaluator<NeatGenome>(
-                                                                              innerEvaluator,
-                                                                              SelectiveGenomeListEvaluator<NeatGenome>.CreatePredicate_OnceOnly());
       // Initialize the evolution algorithm.
-      ea.Initialize(selectiveEvaluator, genomeFactory, genomeList);
+      ea.Initialize(null, genomeFactory, genomeList);
 
 
       neatAlgorithm = ea;
@@ -90,7 +96,7 @@ namespace VNeuralNetwork
 
       for (int i = 0; i < neatAlgorithm.GenomeList.Count; i++)
       {
-        AddAgent((NeatGenome)neatAlgorithm.GenomeList[i]);
+        AddAgent(neatAlgorithm.GenomeList[i]);
       }
     }
 
@@ -98,9 +104,10 @@ namespace VNeuralNetwork
 
     #region AddAgent
 
-    public TAIModel AddAgent(NeatGenome neuralNetwork)
+    public TAIModel AddAgent(INeuralNetwork neuralNetwork)
     {
       var newAgent = viewModelsFactory.Create<TAIModel>(neuralNetwork);
+      neuralNetwork.InputCount = this.inputCount;
 
       Agents.Add(newAgent);
 
@@ -111,41 +118,12 @@ namespace VNeuralNetwork
 
     public void UpdateGeneration()
     {
-      neatAlgorithm.UpdateGeneration();
-    }
-  }
-
-  public class Evaluator : IGenomeListEvaluator<NeatGenome>
-  {
-    IGenomeDecoder<NeatGenome, IBlackBox> _genomeDecoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateAcyclicScheme());
-
-    public ulong EvaluationCount => throw new System.NotImplementedException();
-
-    public bool StopConditionSatisfied => throw new System.NotImplementedException();
-
-    public void Evaluate(IList<NeatGenome> genomeList)
-    {
-      foreach (NeatGenome genome in genomeList)
+      for (int i = 0; i < neatAlgorithm.GenomeList.Count; i++)
       {
-        FastAcyclicNetwork phenome = (FastAcyclicNetwork)_genomeDecoder.Decode(genome);
-
-        if (null == phenome)
-        {   // Non-viable genome.
-          genome.EvaluationInfo.SetFitness(0.0);
-          genome.EvaluationInfo.AuxFitnessArr = null;
-        }
-        else
-        {
-          //FitnessInfo fitnessInfo = phenome.;
-         // genome.EvaluationInfo.SetFitness(fitnessInfo._fitness);
-         // genome.EvaluationInfo.AuxFitnessArr = fitnessInfo._auxFitnessArr;
-        }
+        Agents[i].NeuralNetwork = neatAlgorithm.GenomeList[i];
       }
-    }
 
-    public void Reset()
-    {
-      throw new System.NotImplementedException();
+      neatAlgorithm.UpdateGeneration();
     }
   }
 }

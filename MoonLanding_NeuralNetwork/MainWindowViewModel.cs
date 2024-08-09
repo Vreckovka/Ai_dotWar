@@ -31,11 +31,14 @@ namespace MoonLanding_NeuralNetwork
     public MainWindowViewModel(IViewModelsFactory viewModelsFactory) : base(viewModelsFactory)
     {
       GhostSimulator = new GhostSimulator(viewModelsFactory);
+      GhostSimulator2 = new GhostSimulator2(viewModelsFactory);
       RocketSimulator = new RocketSimulator(viewModelsFactory);
     }
 
 
     public GhostSimulator GhostSimulator { get; set; }
+
+    public GhostSimulator2 GhostSimulator2 { get; set; }
 
     public RocketSimulator RocketSimulator { get; set; }
   }

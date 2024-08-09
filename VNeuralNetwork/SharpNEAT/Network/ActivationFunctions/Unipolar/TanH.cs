@@ -33,7 +33,8 @@ namespace SharpNeat.Network
 
         public double Calculate(double x, double[] auxArgs)
         {
-            return Math.Tanh(x);
+      var value = Math.Tanh(x);
+      return value;
         }
 
         public float Calculate(float x, float[] auxArgs)

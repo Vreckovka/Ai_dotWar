@@ -28,9 +28,9 @@ namespace VNeuralNetwork
       //TestGeneticAlgorithm();
 
       //TestNeatAlgorithm();
+      
       //TestNeatSharp();
-
-      TestNeatManager();
+      //TestNeatManager();
     }
 
     #region TestBackPropagation
@@ -217,9 +217,9 @@ namespace VNeuralNetwork
       IBlackBox net = null;
       IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateAcyclicScheme());
 
-      while (ea.CurrentChampGenome.EvaluationInfo.Fitness < 7.5)
+      while (true)
       {
-        ea.UpdateGeneration();
+        ea.EvaluateGeneration();
 
         Debug.WriteLine($"Generation {ea.CurrentGeneration} Fitness { ea.CurrentChampGenome.EvaluationInfo.Fitness}");
       }
@@ -245,7 +245,7 @@ namespace VNeuralNetwork
     {
       NEATManager<AIObject> manager = new NEATManager<AIObject>(viewModelsFactory);
 
-      manager.InitializeManager(3,1, 100);
+      manager.InitializeManager(3,1, 200);
       manager.CreateAgents();
 
       double fitness = -100;
@@ -267,7 +267,7 @@ namespace VNeuralNetwork
       };
 
 
-      while (fitness < -0.6)
+      while (fitness < 7.5)
       {
         foreach (var agent in manager.Agents)
         {
@@ -278,7 +278,10 @@ namespace VNeuralNetwork
 
             var output = agent.NeuralNetwork.FeedForward(values);
 
-            agent.NeuralNetwork.Fitness += (float)AddFitnessLoss(output, result);
+            var fitnessf = (float)AddFitness(output, result);
+          
+
+            agent.NeuralNetwork.Fitness += fitnessf;
           }
         }
 
@@ -332,6 +335,15 @@ namespace VNeuralNetwork
     #region AddFitnessLoss
 
     private double AddFitnessLoss(double[] output, double expected)
+    {
+      return 1 + Math.Abs(expected - output[0]) * -1;
+    }
+
+    #endregion
+
+    #region AddFitness
+
+    private double AddFitness(float[] output, float expected)
     {
       return 1 + Math.Abs(expected - output[0]) * -1;
     }

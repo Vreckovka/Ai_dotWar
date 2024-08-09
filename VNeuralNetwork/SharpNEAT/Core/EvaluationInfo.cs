@@ -32,7 +32,7 @@ namespace SharpNeat.Core
         readonly DoubleCircularBufferWithStats _fitnessHistory;
         readonly int _fitnessHistoryLength;
 
-        double _fitness;
+        public double _fitness;
         bool _isEvaluated;
         uint _evaluationCount;
         uint _evaluationPassCount;
@@ -164,6 +164,9 @@ namespace SharpNeat.Core
             if(null != _fitnessHistory) {
                 _fitnessHistory.Enqueue(fitness);
             }
+
+      if (fitness == 8)
+        ;
         }
 
         /// <summary>

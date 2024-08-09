@@ -37,6 +37,7 @@ namespace MoonLanding_NeuralNetwork
 
     #endregion
 
+
     public MainWindow()
     {
       DataContext = this;
@@ -51,8 +52,8 @@ namespace MoonLanding_NeuralNetwork
     {
       if(DataContext is MainWindowViewModel viewModel)
       {
-        viewModel.GhostSimulator.canvas = canvas;
-        viewModel.GhostSimulator.Start();
+        viewModel.GhostSimulator2.canvas = canvas;
+        viewModel.GhostSimulator2.Start();
 
       }
     }

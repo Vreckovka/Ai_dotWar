@@ -39,11 +39,25 @@ namespace SharpNeat.Genomes.Neat
   /// are only stored in the same list as hidden nodes as an efficiency measure when producing offspring 
   /// and decoding genomes, otherwise it would probably make sense to store them in read-only lists.
   /// </summary>
-  public class NeatGenome : IGenome<NeatGenome>, INetworkDefinition, INeuralNetwork
+  public class NeatGenome : INeuralNetwork, IGenome<NeatGenome>, INetworkDefinition
   {
 
-    public float Fitness { get ; set ; }
+    private float fitness;
+    public float Fitness
+    {
+      get
+      {
+        return fitness;
+      }
+      set
+      {
+        fitness = value;
+        EvaluationInfo.SetFitness(value);
+      }
+    }
     public int InputCount { get; set; }
+
+    FastAcyclicNetwork network = null;
 
     #region Instance Variables
 
@@ -121,6 +135,8 @@ namespace SharpNeat.Genomes.Neat
         _auxStateNeuronCount = CountAuxStateNodes();
       }
 
+      network = GetNetwork();
+
       Debug.Assert(PerformIntegrityCheck());
     }
 
@@ -145,6 +161,8 @@ namespace SharpNeat.Genomes.Neat
       _inputBiasOutputNeuronCount = copyFrom._inputBiasOutputNeuronCount;
 
       _evalInfo = new EvaluationInfo(copyFrom.EvaluationInfo.FitnessHistoryLength);
+
+      network = GetNetwork();
 
       Debug.Assert(PerformIntegrityCheck());
     }
@@ -1631,24 +1649,35 @@ namespace SharpNeat.Genomes.Neat
 
     public float[] FeedForward(float[] inputs)
     {
-      var net = GetNetwork();
-
       for (int i = 0; i < inputs.Length; i++)
       {
-        net.InputSignalArray[i] = inputs[i];
+        network.InputSignalArray[i] = inputs[i];
       }
 
-      net.Activate();
+      network.Activate();
 
-      var result = new float[net.OutputSignalArray.Length];
+      var result = new float[network.OutputSignalArray.Length];
 
-      for (int i = 0; i < net.OutputSignalArray.Length; i++)
+      for (int i = 0; i < network.OutputSignalArray.Length; i++)
       {
-        result[i] = (float)net.OutputSignalArray[i];
+        result[i] = (float)MapRangeToNegativeOneToOne(network.OutputSignalArray[i]);
       }
 
       return result;
     }
+
+    public double MapRangeToNegativeOneToOne(double value)
+    {
+      // Ensure that value is within the expected range [0, 1].
+      if (value < 0 || value > 1)
+      {
+        throw new ArgumentOutOfRangeException(nameof(value), "Value should be in the range [0, 1].");
+      }
+
+      // Map the value from [0, 1] to [-1, 1].
+      return 2 * value - 1;
+    }
+
 
     private FastAcyclicNetwork GetNetwork()
     {
@@ -1658,12 +1687,12 @@ namespace SharpNeat.Genomes.Neat
 
     public void AddFitness(float fitness)
     {
-      throw new NotImplementedException();
+      Fitness += fitness;
     }
 
     public void SaveNeuralNetwork(string path)
     {
-      throw new NotImplementedException();
+      //throw new NotImplementedException();
     }
   }
 }

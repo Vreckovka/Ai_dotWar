@@ -18,7 +18,7 @@
     <Style BasedOn="{StaticResource {x:Type Window}}" TargetType="Window" />
   </Window.Style>
 
-  <Border Padding="5" DataContext="{Binding RocketSimulator}">
+  <Border Padding="5" DataContext="{Binding GhostSimulator2}">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="auto" />
@@ -131,7 +131,10 @@
         </lvc:CartesianChart.AxisX>
 
         <lvc:CartesianChart.Series>
-          <lvc:LineSeries Title="Survivorship" Values="{Binding ChartData}" PointGeometrySize="0"/>
+          <lvc:LineSeries
+            Title="Survivorship"
+            PointGeometrySize="0"
+            Values="{Binding ChartData}" />
         </lvc:CartesianChart.Series>
       </lvc:CartesianChart>
     </Grid>

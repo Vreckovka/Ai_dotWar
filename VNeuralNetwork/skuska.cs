@@ -27,8 +27,9 @@ namespace VNeuralNetwork
       int outputCount = 1; // Number of output nodes
 
       var _neatGenomeParams = new NeatGenomeParameters();
-      _neatGenomeParams.FeedforwardOnly = true;
-      _neatGenomeParams.ActivationFn = LeakyReLU.__DefaultInstance;
+      _neatGenomeParams.FeedforwardOnly = false;
+      _neatGenomeParams.ActivationFn = TanH.__DefaultInstance;
+      _neatGenomeParams.ConnectionWeightRange = 1;
 
       // Create the evolution algorithm.
       NeatAlgorithm ea = new NeatAlgorithm();
@@ -44,7 +45,7 @@ namespace VNeuralNetwork
       XorExperimentEvaluator evaluator = new XorExperimentEvaluator();
 
       // Create genome decoder.
-      IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateAcyclicScheme());
+      IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(100));
 
       // Create a genome list evaluator. This packages up the genome decoder with the genome evaluator.
       IGenomeListEvaluator<NeatGenome> innerEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
@@ -98,20 +99,32 @@ namespace VNeuralNetwork
         var values = list[i].Keys.First();
         var result = list[i].Values.First();
 
-        phenome.InputSignalArray[0] = values[0];
-        phenome.InputSignalArray[1] = values[1];
-        phenome.InputSignalArray[2] = values[2];
+        phenome.InputSignalArray[0] = new Random().Next(0, 100);
+        phenome.InputSignalArray[1] = new Random().Next(0, 100);
+        phenome.InputSignalArray[2] = new Random().Next(0, 100);
 
         phenome.Activate();
 
-        var loss = Math.Abs(result - (float)phenome.OutputSignalArray[0]) * -1;
+        var output = phenome.OutputSignalArray[0];
 
-        fitness += 1 + loss;
+      Debug.WriteLine(output);
+
+      
+
+        if (output < 0)
+          fitness += (float)Math.Abs(output);
+        else
+          fitness += 1f - (float)output;
+
+        //var loss = Math.Abs(result - (float)phenome.OutputSignalArray[0]) * -1;
+
+        //fitness += 1 + loss;
       }
 
       return new FitnessInfo(fitness, fitness);
     }
 
+   
     public void Reset()
     {
       //throw new NotImplementedException();

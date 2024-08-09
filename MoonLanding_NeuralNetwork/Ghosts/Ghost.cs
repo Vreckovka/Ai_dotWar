@@ -18,7 +18,7 @@ namespace MoonLanding_NeuralNetwork
     public AIWpfObject Target;
     private Random random = new Random();
 
-    public Ghost(NeuralNetwork neuralNetwork) : base(neuralNetwork)
+    public Ghost(INeuralNetwork neuralNetwork) : base(neuralNetwork)
     {
       var ellipse = new Ellipse();
       ellipse.Width = 8;
@@ -80,7 +80,7 @@ namespace MoonLanding_NeuralNetwork
         foreach (var target in targets
         .Where(x => Math.Abs(Vector2.Distance(actualPoint, x.GetPosition())) <= Target.width))
         {
-          NeuralNetwork.AddFitness(1);
+          NeuralNetwork.AddFitness(100);
 
           if (target is Target targetTarget)
           {
