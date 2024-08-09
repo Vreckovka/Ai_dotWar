@@ -28,7 +28,9 @@ namespace VNeuralNetwork
       //TestGeneticAlgorithm();
 
       //TestNeatAlgorithm();
-      TestNeatSharp();
+      //TestNeatSharp();
+
+      TestNeatManager();
     }
 
     #region TestBackPropagation
@@ -73,7 +75,7 @@ namespace VNeuralNetwork
       manager.CreateAgents();
 
       double fitness = -100;
-      NeuralNetwork net = null;
+      INeuralNetwork net = null;
 
       var random = new Random();
 
@@ -206,6 +208,8 @@ namespace VNeuralNetwork
 
     #endregion
 
+    #region TestNeatSharp
+
     public void TestNeatSharp()
     {
       var ea = new XorExperiment().Init();
@@ -225,7 +229,7 @@ namespace VNeuralNetwork
 
       net = genomeDecoder.Decode(ea.CurrentChampGenome);
 
-      Debug.WriteLine($"[0, 0, 0] -> {FeedForward(net,new double[] { 0, 0, 0 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[0, 0, 0] -> {FeedForward(net, new double[] { 0, 0, 0 })[0]:0.000} -> 0");
       Debug.WriteLine($"[0, 0, 1] -> {FeedForward(net, new double[] { 0, 0, 1 })[0]:0.000} -> 1");
       Debug.WriteLine($"[0, 1, 0] -> {FeedForward(net, new double[] { 0, 1, 0 })[0]:0.000} -> 1");
       Debug.WriteLine($"[0, 1, 1] -> {FeedForward(net, new double[] { 0, 1, 1 })[0]:0.000} -> 0");
@@ -235,6 +239,72 @@ namespace VNeuralNetwork
       Debug.WriteLine($"[1, 1, 1] -> {FeedForward(net, new double[] { 1, 1, 1 })[0]:0.000} -> 1");
     }
 
+    #endregion
+
+    private void TestNeatManager()
+    {
+      NEATManager<AIObject> manager = new NEATManager<AIObject>(viewModelsFactory);
+
+      manager.InitializeManager(3,1, 100);
+      manager.CreateAgents();
+
+      double fitness = -100;
+      INeuralNetwork net = null;
+
+      var random = new Random();
+
+
+      var list = new List<Dictionary<float[], float>>()
+      {
+        new Dictionary<float[], float>(){ { new float[] { 0, 0, 0 }, 0 } },
+        new Dictionary<float[], float>(){ { new float[] { 0, 0, 1 }, 1 } },
+        new Dictionary<float[], float>(){{ new float[] { 0, 1, 0 }, 1 } },
+        new Dictionary<float[], float>(){{ new float[] { 0, 1, 1 }, 0  } },
+        new Dictionary<float[], float>(){{ new float[] { 1, 0, 0 }, 1  } },
+        new Dictionary<float[], float>(){{ new float[] { 1, 0, 1 }, 0  } },
+        new Dictionary<float[], float>(){{ new float[] { 1, 1, 0 }, 0  } },
+        new Dictionary<float[], float>(){{ new float[] { 1, 1, 1 }, 1  } },
+      };
+
+
+      while (fitness < -0.6)
+      {
+        foreach (var agent in manager.Agents)
+        {
+          for (int i = 0; i < list.Count; i++)
+          {
+            var values = list[i].Keys.First();
+            var result = list[i].Values.First();
+
+            var output = agent.NeuralNetwork.FeedForward(values);
+
+            agent.NeuralNetwork.Fitness += (float)AddFitnessLoss(output, result);
+          }
+        }
+
+        net = manager.Agents
+       .OrderByDescending(x => x.NeuralNetwork.Fitness)
+       .First().NeuralNetwork;
+
+        fitness = net.Fitness;
+
+        Debug.WriteLine($"Generation {manager.Generation} Fitness {fitness}");
+
+        manager.UpdateGeneration();
+      }
+
+
+
+      Debug.WriteLine($"Fitness -> {fitness}");
+      Debug.WriteLine($"[0, 0, 0] -> {net.FeedForward(new float[] { 0, 0, 0 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[0, 0, 1] -> {net.FeedForward(new float[] { 0, 0, 1 })[0]:0.000} -> 1");
+      Debug.WriteLine($"[0, 1, 0] -> {net.FeedForward(new float[] { 0, 1, 0 })[0]:0.000} -> 1");
+      Debug.WriteLine($"[0, 1, 1] -> {net.FeedForward(new float[] { 0, 1, 1 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[1, 0, 0] -> {net.FeedForward(new float[] { 1, 0, 0 })[0]:0.000} -> 1");
+      Debug.WriteLine($"[1, 0, 1] -> {net.FeedForward(new float[] { 1, 0, 1 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[1, 1, 0] -> {net.FeedForward(new float[] { 1, 1, 0 })[0]:0.000} -> 0");
+      Debug.WriteLine($"[1, 1, 1] -> {net.FeedForward(new float[] { 1, 1, 1 })[0]:0.000} -> 1");
+    }
 
     private double[] FeedForward(IBlackBox blackBox, double[] inputs)
     {
@@ -246,8 +316,6 @@ namespace VNeuralNetwork
       blackBox.Activate();
 
      var result =  new double[] { blackBox.OutputSignalArray[0] };
-
-      blackBox.ResetState();
 
       return result;
     }

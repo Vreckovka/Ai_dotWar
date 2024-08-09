@@ -18,21 +18,6 @@ using SharpNeat.SpeciationStrategies;
 
 namespace VNeuralNetwork
 {
-  public class NeatAlgorithm : NeatEvolutionAlgorithm<NeatGenome>
-  {
-    public NeatAlgorithm() : base()
-    {
-
-    }
-
-    public void UpdateGeneration()
-    {
-      this.PerformOneGeneration();
-
-      _currentGeneration++;
-    }
-  }
-
 
   public class XorExperiment
   {

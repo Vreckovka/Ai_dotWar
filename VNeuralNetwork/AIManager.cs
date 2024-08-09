@@ -7,15 +7,6 @@ using VCore.Standard.Factories.ViewModels;
 
 namespace VNeuralNetwork
 {
-  public class AIObject
-  {
-    public NeuralNetwork NeuralNetwork { get; set; }
-
-    public AIObject(NeuralNetwork neuralNetwork)
-    {
-      NeuralNetwork = neuralNetwork;
-    }
-  }
 
   public class AIManager<TAIModel> : ViewModel where TAIModel : AIObject
   {
@@ -51,6 +42,8 @@ namespace VNeuralNetwork
 
     #endregion
 
+    #region InitializeManager
+
     public virtual void InitializeManager(int[] layers, int agentCount)
     {
       genetic = new GeneticAlgoNeuralNetwork(agentCount, layers, mutationRate);
@@ -58,6 +51,8 @@ namespace VNeuralNetwork
       genetic.SeedGeneration();
       CreateAgents();
     }
+
+    #endregion
 
     #region CreateAgents
 

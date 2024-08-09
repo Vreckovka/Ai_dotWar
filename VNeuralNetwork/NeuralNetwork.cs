@@ -8,12 +8,14 @@ namespace VNeuralNetwork
   using System.Collections.Generic;
   using System.Linq;
 
-  public class NeuralNetwork : IComparable<NeuralNetwork>
+  public class NeuralNetwork : IComparable<NeuralNetwork>, INeuralNetwork
   {
     public List<Layer> Layers { get; set; }
     public float Fitness { get; set; }
 
     public int[] LayerSizes { get; set; }
+
+    public int InputCount { get; set; }
 
     #region Constructors
 
@@ -24,6 +26,8 @@ namespace VNeuralNetwork
     public NeuralNetwork(int[] layerSizes)
     {
       LayerSizes = layerSizes;
+
+      InputCount = layerSizes[0];
 
       Layers = new List<Layer>();
       for (int i = 1; i < layerSizes.Length; i++)
@@ -37,6 +41,7 @@ namespace VNeuralNetwork
     public NeuralNetwork(NeuralNetwork copyNetwork)
     {
       Layers = new List<Layer>();
+      InputCount = copyNetwork.InputCount;
 
       for (int i = 0; i < copyNetwork.Layers.Count; i++)
       {

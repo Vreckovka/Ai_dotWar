@@ -48,7 +48,7 @@ namespace MoonLanding_NeuralNetwork
     public override void Update(IEnumerable<AIWpfObject> targets, IEnumerable<AIWpfObject> siblings)
     {
 
-      float[] inputs = new float[NeuralNetwork.Layers[0].Neurons[0].Weights.Count];
+      float[] inputs = new float[NeuralNetwork.InputCount];
 
       float min = (float)width * 2f;
       var actualPoint = position;

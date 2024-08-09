@@ -323,7 +323,7 @@ namespace NeuralNetwork_WPF.Ghosts
 
         if (random.Next(0, 10000) < 2 && liveTargets.Count < 100)
         {
-          AddTargetToUi(TargetManager.AddAgent(new NeuralNetwork(bestTarget.NeuralNetwork)));
+          AddTargetToUi(TargetManager.AddAgent(new NeuralNetwork((NeuralNetwork)bestTarget.NeuralNetwork)));
           //target.NeuralNetwork.AddFitness(1000);
         }
 
@@ -361,7 +361,7 @@ namespace NeuralNetwork_WPF.Ghosts
        {
          for (int i = 0; i < ticks; i++)
          {
-           AddGhostToUi(GhostManager.AddAgent(new NeuralNetwork(bestGhost.NeuralNetwork)));
+           AddGhostToUi(GhostManager.AddAgent(new NeuralNetwork((NeuralNetwork)bestGhost.NeuralNetwork)));
          }
        }
      });
