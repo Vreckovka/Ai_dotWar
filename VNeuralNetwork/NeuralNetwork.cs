@@ -11,7 +11,7 @@ namespace VNeuralNetwork
   public class NeuralNetwork : IComparable<NeuralNetwork>, INeuralNetwork
   {
     public List<Layer> Layers { get; set; }
-    public float Fitness { get; set; }
+    public float Fitness { get; private set; }
 
     public int[] LayerSizes { get; set; }
 
@@ -36,6 +36,10 @@ namespace VNeuralNetwork
       }
     }
 
+    public void ResetFitness()
+    {
+      Fitness = 0;
+    }
    
 
     public NeuralNetwork(NeuralNetwork copyNetwork)

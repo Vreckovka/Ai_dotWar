@@ -27,7 +27,10 @@ namespace VNeuralNetwork
       int outputCount = 1; // Number of output nodes
 
       var _neatGenomeParams = new NeatGenomeParameters();
-      _neatGenomeParams.FeedforwardOnly = false;
+
+      var scheme = NetworkActivationScheme.CreateAcyclicScheme();
+
+      _neatGenomeParams.FeedforwardOnly = scheme.AcyclicNetwork;
       _neatGenomeParams.ActivationFn = TanH.__DefaultInstance;
       _neatGenomeParams.ConnectionWeightRange = 1;
 
@@ -45,10 +48,10 @@ namespace VNeuralNetwork
       XorExperimentEvaluator evaluator = new XorExperimentEvaluator();
 
       // Create genome decoder.
-      IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(100));
+      IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(scheme);
 
       // Create a genome list evaluator. This packages up the genome decoder with the genome evaluator.
-      IGenomeListEvaluator<NeatGenome> innerEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
+      IGenomeListEvaluator<NeatGenome> innerEvaluator = new SelectiveGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
 
       // Wrap the list evaluator in a 'selective' evaluator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
       // that were in the population in previous generations (elite genomes). This is determined by examining each genome's evaluation info object.
@@ -60,6 +63,23 @@ namespace VNeuralNetwork
 
 
       return ea;
+    }
+  }
+
+  public class VoidEvaluator : IPhenomeEvaluator<IBlackBox>
+  {
+    public ulong EvaluationCount => 0;
+
+    public bool StopConditionSatisfied => false;
+
+    public FitnessInfo Evaluate(IBlackBox phenome)
+    {
+      throw new NotImplementedException();
+    }
+
+    public void Reset()
+    {
+      throw new NotImplementedException();
     }
   }
 
@@ -99,26 +119,15 @@ namespace VNeuralNetwork
         var values = list[i].Keys.First();
         var result = list[i].Values.First();
 
-        phenome.InputSignalArray[0] = new Random().Next(0, 100);
-        phenome.InputSignalArray[1] = new Random().Next(0, 100);
-        phenome.InputSignalArray[2] = new Random().Next(0, 100);
+        phenome.InputSignalArray[0] = values[0];
+        phenome.InputSignalArray[1] = values[1];
+        phenome.InputSignalArray[2] = values[2];
 
         phenome.Activate();
 
-        var output = phenome.OutputSignalArray[0];
+        var loss = Math.Abs(result - (float)phenome.OutputSignalArray[0]) * -1;
 
-      Debug.WriteLine(output);
-
-      
-
-        if (output < 0)
-          fitness += (float)Math.Abs(output);
-        else
-          fitness += 1f - (float)output;
-
-        //var loss = Math.Abs(result - (float)phenome.OutputSignalArray[0]) * -1;
-
-        //fitness += 1 + loss;
+        fitness += 1 + loss;
       }
 
       return new FitnessInfo(fitness, fitness);

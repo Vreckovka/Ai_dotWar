@@ -30,7 +30,7 @@ namespace VNeuralNetwork
       //TestNeatAlgorithm();
       
       //TestNeatSharp();
-      //TestNeatManager();
+      TestNeatManager();
     }
 
     #region TestBackPropagation
@@ -104,7 +104,7 @@ namespace VNeuralNetwork
 
             var output = agent.NeuralNetwork.FeedForward(values);
 
-            agent.NeuralNetwork.Fitness += (float)AddFitnessLoss(output, result);
+            agent.NeuralNetwork.AddFitness((float)AddFitnessLoss(output, result));
           }
         }
 
@@ -243,9 +243,9 @@ namespace VNeuralNetwork
 
     private void TestNeatManager()
     {
-      NEATManager<AIObject> manager = new NEATManager<AIObject>(viewModelsFactory);
+      NEATManager<AIObject> manager = new NEATManager<AIObject>(viewModelsFactory, NetworkActivationScheme.CreateAcyclicScheme());
 
-      manager.InitializeManager(3,1, 200);
+      manager.InitializeManager(3,1, 700);
       manager.CreateAgents();
 
       double fitness = -100;
@@ -281,7 +281,7 @@ namespace VNeuralNetwork
             var fitnessf = (float)AddFitness(output, result);
           
 
-            agent.NeuralNetwork.Fitness += fitnessf;
+            agent.NeuralNetwork.AddFitness(fitnessf);
           }
         }
 
@@ -293,7 +293,13 @@ namespace VNeuralNetwork
 
         Debug.WriteLine($"Generation {manager.Generation} Fitness {fitness}");
 
+        if(fitness > 7.5)
+        {
+          break;
+        }
+
         manager.UpdateGeneration();
+        manager.CreateAgents();
       }
 
 
@@ -307,6 +313,20 @@ namespace VNeuralNetwork
       Debug.WriteLine($"[1, 0, 1] -> {net.FeedForward(new float[] { 1, 0, 1 })[0]:0.000} -> 0");
       Debug.WriteLine($"[1, 1, 0] -> {net.FeedForward(new float[] { 1, 1, 0 })[0]:0.000} -> 0");
       Debug.WriteLine($"[1, 1, 1] -> {net.FeedForward(new float[] { 1, 1, 1 })[0]:0.000} -> 1");
+
+      float loss = 0;
+
+      for (int i = 0; i < list.Count; i++)
+      {
+        var values = list[i].Keys.First();
+        var result = list[i].Values.First();
+
+        var output = net.FeedForward(values);
+
+        loss += (float)AddFitnessLoss(output, result);
+      }
+
+      Debug.WriteLine($"Total Loss -> {loss}");
     }
 
     private double[] FeedForward(IBlackBox blackBox, double[] inputs)

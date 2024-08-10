@@ -30,7 +30,7 @@ namespace SharpNeat.Core
     public class SelectiveGenomeListEvaluator<TGenome> : IGenomeListEvaluator<TGenome>
         where TGenome : class, IGenome<TGenome>
     {
-        readonly IGenomeListEvaluator<TGenome> _innerEvaluator;
+        public readonly IGenomeListEvaluator<TGenome> _innerEvaluator;
         readonly Predicate<TGenome> _selectionPredicate;
 
         #region Constructor

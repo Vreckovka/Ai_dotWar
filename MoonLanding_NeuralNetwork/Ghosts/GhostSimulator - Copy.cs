@@ -1,5 +1,6 @@
 ﻿using LiveCharts;
 using MoonLanding_NeuralNetwork;
+using SharpNeat.Decoders;
 using SharpNeat.Genomes.Neat;
 using System;
 using System.Collections.Generic;
@@ -42,8 +43,8 @@ namespace NeuralNetwork_WPF.Ghosts
     public GhostSimulator2(IViewModelsFactory viewModelsFactory)
     {
       ghostFill = (SolidColorBrush)new BrushConverter().ConvertFrom("#35ac60fc");
-      GhostManager = new NEATManager<Ghost>(viewModelsFactory);
-      TargetManager = new NEATManager<Target>(viewModelsFactory);
+      GhostManager = new NEATManager<Ghost>(viewModelsFactory, NetworkActivationScheme.CreateAcyclicScheme());
+      TargetManager = new NEATManager<Target>(viewModelsFactory, NetworkActivationScheme.CreateAcyclicScheme());
 
       session = DateTime.Now.ToString("dd_MM_yyyy_hh_mm_ss");
       ViewModelsFactory = viewModelsFactory;

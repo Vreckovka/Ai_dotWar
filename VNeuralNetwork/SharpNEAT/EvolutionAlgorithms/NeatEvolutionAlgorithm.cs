@@ -21,6 +21,7 @@ using SharpNeat.Core;
 using SharpNeat.DistanceMetrics;
 using SharpNeat.EvolutionAlgorithms.ComplexityRegulation;
 using SharpNeat.Genomes.Neat;
+using SharpNeat.Phenomes;
 using SharpNeat.SpeciationStrategies;
 using VCore.Standard.Helpers;
 
@@ -36,7 +37,7 @@ namespace SharpNeat.EvolutionAlgorithms
   public class NeatEvolutionAlgorithm<TGenome> : AbstractGenerationalAlgorithm<TGenome>
       where TGenome : class, IGenome<TGenome>
   {
-    NeatEvolutionAlgorithmParameters _eaParams;
+    protected NeatEvolutionAlgorithmParameters _eaParams;
     readonly NeatEvolutionAlgorithmParameters _eaParamsComplexifying;
     readonly NeatEvolutionAlgorithmParameters _eaParamsSimplifying;
 
@@ -174,6 +175,8 @@ namespace SharpNeat.EvolutionAlgorithms
 
       // Store ref to best genome.
       UpdateBestGenome();
+
+      UpdateNetworks();
     }
 
     #endregion
@@ -253,7 +256,7 @@ namespace SharpNeat.EvolutionAlgorithms
 
     public void CreateNewGeneration()
     {
-    
+
       // Calculate statistics for each specie (mean fitness, target size, number of offspring to produce etc.)
       int offspringCount;
       SpecieStats[] specieStatsArr = CalcSpecieStats(out offspringCount);
@@ -313,8 +316,20 @@ namespace SharpNeat.EvolutionAlgorithms
           break;
       }
 
+
+
+      UpdateNetworks();
       // TODO: More checks.
       Debug.Assert(_genomeList.Count == _populationSize);
+    }
+
+    public void UpdateNetworks()
+    {
+      if (_genomeListEvaluator != null)
+        foreach (var genome in GenomeList.OfType<NeatGenome>())
+        {
+          genome.Network = ((SelectiveGenomeListEvaluator<NeatGenome, IBlackBox>)((SelectiveGenomeListEvaluator<NeatGenome>)_genomeListEvaluator)._innerEvaluator)._genomeDecoder.Decode(genome);
+        }
     }
 
     #endregion

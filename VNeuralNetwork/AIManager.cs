@@ -93,7 +93,7 @@ namespace VNeuralNetwork
       }
 
 
-      Agents.ForEach(x => x.NeuralNetwork.Fitness = 0);
+      Agents.ForEach(x => x.NeuralNetwork.ResetFitness());
       Generation++;
     }
 

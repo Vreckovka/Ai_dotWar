@@ -24,12 +24,12 @@ namespace SharpNeat.Core
     /// </summary>
     /// <typeparam name="TGenome">The genome type that is decoded.</typeparam>
     /// <typeparam name="TPhenome">The phenome type that is decoded to and then evaluated.</typeparam>
-    public class SerialGenomeListEvaluator<TGenome,TPhenome> : IGenomeListEvaluator<TGenome>
+    public class SelectiveGenomeListEvaluator<TGenome,TPhenome> : IGenomeListEvaluator<TGenome>
         where TGenome : class, IGenome<TGenome>
         where TPhenome: class
     {
         readonly EvaluationMethod _evaluationMethod;
-        readonly IGenomeDecoder<TGenome,TPhenome> _genomeDecoder;
+        public readonly IGenomeDecoder<TGenome,TPhenome> _genomeDecoder;
         readonly IPhenomeEvaluator<TPhenome> _phenomeEvaluator;
         readonly bool _enablePhenomeCaching;
 
@@ -41,7 +41,7 @@ namespace SharpNeat.Core
         /// Construct with the provided IGenomeDecoder and IPhenomeEvaluator.
         /// Phenome caching is enabled by default.
         /// </summary>
-        public SerialGenomeListEvaluator(IGenomeDecoder<TGenome,TPhenome> genomeDecoder,
+        public SelectiveGenomeListEvaluator(IGenomeDecoder<TGenome,TPhenome> genomeDecoder,
                                          IPhenomeEvaluator<TPhenome> phenomeEvaluator)
         {
             _genomeDecoder = genomeDecoder;
@@ -53,7 +53,7 @@ namespace SharpNeat.Core
         /// <summary>
         /// Construct with the provided IGenomeDecoder, IPhenomeEvaluator and enablePhenomeCaching flag.
         /// </summary>
-        public SerialGenomeListEvaluator(IGenomeDecoder<TGenome,TPhenome> genomeDecoder,
+        public SelectiveGenomeListEvaluator(IGenomeDecoder<TGenome,TPhenome> genomeDecoder,
                                          IPhenomeEvaluator<TPhenome> phenomeEvaluator,
                                          bool enablePhenomeCaching)
         {
@@ -77,7 +77,7 @@ namespace SharpNeat.Core
         /// </summary>
         public ulong EvaluationCount
         {
-            get { return _phenomeEvaluator.EvaluationCount; }
+            get { return _phenomeEvaluator?.EvaluationCount ?? 0u; }
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace SharpNeat.Core
         /// </summary>
         public bool StopConditionSatisfied
         {
-            get { return _phenomeEvaluator.StopConditionSatisfied; }
+            get { return _phenomeEvaluator?.StopConditionSatisfied ?? false; }
         }
 
         /// <summary>

@@ -6,8 +6,10 @@ namespace VNeuralNetwork
   {
     float[] FeedForward(float[] input);
     void AddFitness(float fitness);
+    void ResetFitness();
 
-    public float Fitness { get; set; }
+    public float Fitness { get; }
+
     public void SaveNeuralNetwork(string path);
 
     public int InputCount { get; set; }

@@ -49,19 +49,27 @@ namespace SharpNeat.Genomes.Neat
       {
         return fitness;
       }
-      set
+      private set
       {
         fitness = value;
         EvaluationInfo.SetFitness(value);
       }
     }
+
+    public void ResetFitness()
+    {
+      Fitness = 0;
+    }
+
     public int InputCount { get; set; }
 
-    FastAcyclicNetwork network = null;
+    public IBlackBox Network { get; set; }
 
     #region Instance Variables
 
     IGenomeDecoder<NeatGenome, IBlackBox> _genomeDecoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateAcyclicScheme());
+    //IGenomeDecoder<NeatGenome, IBlackBox> _genomeDecoder = new NeatGenomeDecoder(NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(100));
+
 
     NeatGenomeFactory _genomeFactory;
     readonly uint _id;
@@ -135,8 +143,6 @@ namespace SharpNeat.Genomes.Neat
         _auxStateNeuronCount = CountAuxStateNodes();
       }
 
-      network = GetNetwork();
-
       Debug.Assert(PerformIntegrityCheck());
     }
 
@@ -162,7 +168,7 @@ namespace SharpNeat.Genomes.Neat
 
       _evalInfo = new EvaluationInfo(copyFrom.EvaluationInfo.FitnessHistoryLength);
 
-      network = GetNetwork();
+      Network = copyFrom.Network;
 
       Debug.Assert(PerformIntegrityCheck());
     }
@@ -1651,43 +1657,24 @@ namespace SharpNeat.Genomes.Neat
     {
       for (int i = 0; i < inputs.Length; i++)
       {
-        network.InputSignalArray[i] = inputs[i];
+        Network.InputSignalArray[i] = inputs[i];
       }
 
-      network.Activate();
+      Network.Activate();
 
-      var result = new float[network.OutputSignalArray.Length];
+      var result = new float[Network.OutputSignalArray.Length];
 
-      for (int i = 0; i < network.OutputSignalArray.Length; i++)
+      for (int i = 0; i < Network.OutputSignalArray.Length; i++)
       {
-        result[i] = (float)MapRangeToNegativeOneToOne(network.OutputSignalArray[i]);
+        result[i] = (float)Network.OutputSignalArray[i];
       }
 
       return result;
     }
 
-    public double MapRangeToNegativeOneToOne(double value)
-    {
-      // Ensure that value is within the expected range [0, 1].
-      if (value < 0 || value > 1)
-      {
-        throw new ArgumentOutOfRangeException(nameof(value), "Value should be in the range [0, 1].");
-      }
-
-      // Map the value from [0, 1] to [-1, 1].
-      return 2 * value - 1;
-    }
-
-
-    private FastAcyclicNetwork GetNetwork()
-    {
-      return (FastAcyclicNetwork)_genomeDecoder.Decode(this);
-    }
-
-
     public void AddFitness(float fitness)
     {
-      Fitness += fitness;
+      Fitness += float.IsNaN(fitness) ? 0 : fitness;
     }
 
     public void SaveNeuralNetwork(string path)
