@@ -2,6 +2,7 @@
 using SharpNeat.Decoders;
 using SharpNeat.Decoders.Neat;
 using SharpNeat.Genomes.Neat;
+using SharpNeat.Network;
 using SharpNeat.Phenomes;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using VCore.Standard.Factories.ViewModels;
-using VNeuralNetwork.NEAT;
 
 namespace VNeuralNetwork
 {
@@ -26,11 +26,9 @@ namespace VNeuralNetwork
     {
       //TestBackPropagation();
       //TestGeneticAlgorithm();
-
-      //TestNeatAlgorithm();
       
       //TestNeatSharp();
-      TestNeatManager();
+      //TestNeatManager();
     }
 
     #region TestBackPropagation
@@ -134,80 +132,6 @@ namespace VNeuralNetwork
 
     #endregion
 
-    #region TestNeatAlgorithm
-
-    public void TestNeatAlgorithm()
-    {
-      var neat = new NEATAlgorithm(50, 3, 1);
-      Genome net = null;
-
-      double fitness = -100;
-      var random = new Random();
-
-      var list = new List<Dictionary<double[], double>>()
-      {
-        new Dictionary<double[], double>(){ { new double[] { 0, 0, 0 }, 0 } },
-        new Dictionary<double[], double>(){ { new double[] { 0, 0, 1 }, 1 } },
-        new Dictionary<double[], double>(){{ new double[] { 0, 1, 0 }, 1 } },
-        new Dictionary<double[], double>(){{ new double[] { 0, 1, 1 }, 0  } },
-        new Dictionary<double[], double>(){{ new double[] { 1, 0, 0 }, 1  } },
-        new Dictionary<double[], double>(){{ new double[] { 1, 0, 1 }, 0  } },
-        new Dictionary<double[], double>(){{ new double[] { 1, 1, 0 }, 0  } },
-        new Dictionary<double[], double>(){{ new double[] { 1, 1, 1 }, 1  } },
-      };
-
-      var testCases = new List<(double[] inputs, double expectedOutput)>
-        {
-            (new double[] {0, 0}, 0),
-            (new double[] {0, 1}, 1),
-            (new double[] {1, 0}, 1),
-            (new double[] {1, 1}, 0)
-        };
-
-
-      while (neat.Generation < 1000)
-      {
-
-        foreach (var agent in neat.Genomes)
-        {
-          for (int i = 0; i < list.Count; i++)
-          {
-            var values = list[i].Keys.First();
-            var result = list[i].Values.First();
-
-
-            var output = agent.FeedForward(values);
-
-            agent.Fitness += (float)AddFitnessLoss(output, result);
-          }
-        }
-
-        net = neat.Genomes
-       .OrderByDescending(x => x.Fitness)
-       .First();
-
-        fitness = net.Fitness;
-
-        Debug.WriteLine($"Generation {neat.Generation} Fitness {fitness}");
-
-        neat.UpdateGeneration();
-      }
-
-
-
-      Debug.WriteLine($"Fitness -> {fitness}");
-      Debug.WriteLine($"[0, 0, 0] -> {net.FeedForward(new double[] { 0, 0, 0 })[0]:0.000} -> 0");
-      Debug.WriteLine($"[0, 0, 1] -> {net.FeedForward(new double[] { 0, 0, 1 })[0]:0.000} -> 1");
-      Debug.WriteLine($"[0, 1, 0] -> {net.FeedForward(new double[] { 0, 1, 0 })[0]:0.000} -> 1");
-      Debug.WriteLine($"[0, 1, 1] -> {net.FeedForward(new double[] { 0, 1, 1 })[0]:0.000} -> 0");
-      Debug.WriteLine($"[1, 0, 0] -> {net.FeedForward(new double[] { 1, 0, 0 })[0]:0.000} -> 1");
-      Debug.WriteLine($"[1, 0, 1] -> {net.FeedForward(new double[] { 1, 0, 1 })[0]:0.000} -> 0");
-      Debug.WriteLine($"[1, 1, 0] -> {net.FeedForward(new double[] { 1, 1, 0 })[0]:0.000} -> 0");
-      Debug.WriteLine($"[1, 1, 1] -> {net.FeedForward(new double[] { 1, 1, 1 })[0]:0.000} -> 1");
-    }
-
-    #endregion
-
     #region TestNeatSharp
 
     public void TestNeatSharp()
@@ -243,9 +167,13 @@ namespace VNeuralNetwork
 
     private void TestNeatManager()
     {
-      NEATManager<AIObject> manager = new NEATManager<AIObject>(viewModelsFactory, NetworkActivationScheme.CreateAcyclicScheme());
+      NEATManager<AIObject> manager = new NEATManager<AIObject>(
+        viewModelsFactory,
+        NetworkActivationScheme.CreateAcyclicScheme(),
+        3, 1, ReLU.__DefaultInstance);
 
-      manager.InitializeManager(3,1, 700);
+      manager.LoadPredifinedGenome(new int[] { 3,3,3,1});
+      manager.InitializeManager(700);
       manager.CreateAgents();
 
       double fitness = -100;
@@ -279,9 +207,8 @@ namespace VNeuralNetwork
             var output = agent.NeuralNetwork.FeedForward(values);
 
             var fitnessf = (float)AddFitness(output, result);
-          
 
-            agent.NeuralNetwork.AddFitness(fitnessf);
+            agent.NeuralNetwork.AddFitness(fitnessf > 0 ? fitnessf : 0);
           }
         }
 

@@ -169,6 +169,7 @@ namespace SharpNeat.Genomes.Neat
       _evalInfo = new EvaluationInfo(copyFrom.EvaluationInfo.FitnessHistoryLength);
 
       Network = copyFrom.Network;
+      InputCount = copyFrom.InputCount;
 
       Debug.Assert(PerformIntegrityCheck());
     }

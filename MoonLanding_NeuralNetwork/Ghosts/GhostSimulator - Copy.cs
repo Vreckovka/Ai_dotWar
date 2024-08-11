@@ -2,6 +2,7 @@
 using MoonLanding_NeuralNetwork;
 using SharpNeat.Decoders;
 using SharpNeat.Genomes.Neat;
+using SharpNeat.Network;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -43,8 +44,16 @@ namespace NeuralNetwork_WPF.Ghosts
     public GhostSimulator2(IViewModelsFactory viewModelsFactory)
     {
       ghostFill = (SolidColorBrush)new BrushConverter().ConvertFrom("#35ac60fc");
-      GhostManager = new NEATManager<Ghost>(viewModelsFactory, NetworkActivationScheme.CreateAcyclicScheme());
-      TargetManager = new NEATManager<Target>(viewModelsFactory, NetworkActivationScheme.CreateAcyclicScheme());
+      GhostManager = new NEATManager<Ghost>(viewModelsFactory,
+        NetworkActivationScheme.CreateAcyclicScheme(), 4, 4,
+        TanH.__DefaultInstance);
+      TargetManager = new NEATManager<Target>(viewModelsFactory, 
+        NetworkActivationScheme.CreateAcyclicScheme(), inputNumber, 4,
+        TanH.__DefaultInstance);
+
+      GhostManager.LoadPredifinedGenome(new int[] {  4, 8, 8, 4  });
+      TargetManager.LoadPredifinedGenome(new int[] { inputNumber, inputNumber * 2, inputNumber * 2, 4 });
+
 
       session = DateTime.Now.ToString("dd_MM_yyyy_hh_mm_ss");
       ViewModelsFactory = viewModelsFactory;
@@ -197,8 +206,8 @@ namespace NeuralNetwork_WPF.Ghosts
 
     public void Start()
     {
-      GhostManager.InitializeManager(4,4, ghostsCount);
-      TargetManager.InitializeManager(inputNumber, 4 , targetCount);
+      GhostManager.InitializeManager(ghostsCount);
+      TargetManager.InitializeManager(targetCount);
 
       CreateGhosts();
       CreateTargets();

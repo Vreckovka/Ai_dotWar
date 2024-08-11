@@ -75,8 +75,6 @@ namespace MoonLanding_NeuralNetwork
 
       float[] output = NeuralNetwork.FeedForward(inputs);
 
-      output = NEATManager.MapRangeToNegativeOneToOne(output);
-
       vector.X = output[0] + (output[2] * 2.5f);
       vector.Y = output[1] + (output[3] * 2.5f);
 
