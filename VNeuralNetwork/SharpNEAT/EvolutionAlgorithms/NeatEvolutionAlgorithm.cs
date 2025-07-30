@@ -332,6 +332,15 @@ namespace SharpNeat.EvolutionAlgorithms
         }
     }
 
+    public void UpdateNetworks(IList<NeatGenome> genomes)
+    {
+      if (_genomeListEvaluator != null)
+        foreach (var genome in genomes)
+        {
+          genome.Network = ((SelectiveGenomeListEvaluator<NeatGenome, IBlackBox>)((SelectiveGenomeListEvaluator<NeatGenome>)_genomeListEvaluator)._innerEvaluator)._genomeDecoder.Decode(genome);
+        }
+    }
+
     #endregion
 
     #region Private Methods [High Level Algorithm Methods. CalcSpecieStats/CreateOffspring]

@@ -20,6 +20,8 @@ using SharpNeat.Phenomes.NeuralNets;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using VCore.Standard.Helpers;
 using VNeuralNetwork;
 
 namespace SharpNeat.Genomes.Neat
@@ -49,10 +51,20 @@ namespace SharpNeat.Genomes.Neat
       {
         return fitness;
       }
-      private set
+      set
       {
-        fitness = value;
-        EvaluationInfo.SetFitness(value);
+        var new_fitness = value > 0 ? value : 0;
+
+        if (new_fitness > 0 && !float.IsInfinity(fitness) && !float.IsNaN(fitness))
+        {
+          fitness = new_fitness;
+          EvaluationInfo.SetFitness(new_fitness);
+        }
+        else
+        {
+          fitness = 0;
+          EvaluationInfo.SetFitness(0);
+        }
       }
     }
 
@@ -72,7 +84,7 @@ namespace SharpNeat.Genomes.Neat
 
 
     NeatGenomeFactory _genomeFactory;
-    readonly uint _id;
+    uint _id;
     int _specieIdx;
     readonly uint _birthGeneration;
     EvaluationInfo _evalInfo;
@@ -185,6 +197,7 @@ namespace SharpNeat.Genomes.Neat
     public uint Id
     {
       get { return _id; }
+      set { _id = value; }
     }
 
     /// <summary>
@@ -1676,6 +1689,23 @@ namespace SharpNeat.Genomes.Neat
     public void AddFitness(float fitness)
     {
       Fitness += float.IsNaN(fitness) ? 0 : fitness;
+    }
+
+    public List<float> fitnesses = new List<float>();
+    public void AddSequentialFitness(float fitness)
+    {
+
+      fitnesses.Add(fitness);
+    }
+
+
+    public void UpdateFitnesses()
+    {
+      var fitness = MathHelper.GeometricMean(fitnesses);
+
+      Fitness = fitness > 0 ? fitness : 0;
+
+      fitnesses.Clear();
     }
 
     public void SaveNeuralNetwork(string path)

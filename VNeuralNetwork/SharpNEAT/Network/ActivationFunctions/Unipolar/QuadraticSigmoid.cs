@@ -16,13 +16,13 @@ using Redzen.Random.Double;
 
 namespace SharpNeat.Network
 {
-    /// <summary>
-    /// A sigmoid formed by two sub-sections of the y=x^2 curve.
-    /// 
-    /// The extremes are implemented as per the leaky ReLU, i.e. there is a linear slope to 
-    /// ensure there is at least a gradient to follow at the extremes.
-    /// </summary>
-    public class QuadraticSigmoid : IActivationFunction
+  /// <summary>
+  /// A sigmoid formed by two sub-sections of the y=x^2 curve.
+  /// 
+  /// The extremes are implemented as per the leaky ReLU, i.e. there is a linear slope to 
+  /// ensure there is at least a gradient to follow at the extremes.
+  /// </summary>
+  public class QuadraticSigmoid : IActivationFunction
     {
         /// <summary>
         /// Default instance provided as a public static field.

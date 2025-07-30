@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml;
 using SharpNeat.Core;
@@ -26,7 +27,7 @@ namespace VNeuralNetwork
 
       for (int i = 0; i < value.Length; i++)
       {
-        ouput[i] = ScaledLeakyReLU(value[i],c);
+        ouput[i] = ScaledLeakyReLU(value[i], c);
       }
 
       return ouput;
@@ -83,24 +84,19 @@ namespace VNeuralNetwork
       // Map the value from [0, 1] to [-1, 1].
       return 2 * value - 1;
     }
-
-
   }
 
   public class NEATManager<TAIModel> : NEATManager where TAIModel : AIObject
   {
     public NeatAlgorithm NeatAlgorithm { get; set; }
 
-    NeatGenome champ = null;
+    List<NeatGenome> loadedGenomes = null;
 
     private readonly IViewModelsFactory viewModelsFactory;
     private readonly NetworkActivationScheme networkActivationScheme;
 
     public List<INeuralNetwork> Networks => NeatAlgorithm.GenomeList.Select(x => (INeuralNetwork)x).ToList();
-
     public List<TAIModel> Agents { get; set; } = new List<TAIModel>();
-
-
     public int Generation { get { return (int)(NeatAlgorithm?.CurrentGeneration ?? 0); } }
 
     public NEATManager(
@@ -120,7 +116,7 @@ namespace VNeuralNetwork
 
     #region InitializeManager
 
-    private int inputCount;
+    public int inputCount;
     private readonly int outputCount;
     private readonly IActivationFunction activationFunction;
 
@@ -132,6 +128,25 @@ namespace VNeuralNetwork
 
       NeatAlgorithm ea = new NeatAlgorithm(parameters);
 
+      var factory = loadedGenomes != null ? loadedGenomes[0].GenomeFactory : GetGenomeFactory();
+
+      ea.Initialize(GetSelectiveEvaluator(), factory, GetGenomeList(factory, agentCount, loadedGenomes));
+
+
+      NeatAlgorithm = ea;
+    }
+
+    public void InitializeManager(List<NeatGenome> genomes)
+    {
+      NeatAlgorithm.Initialize(GetSelectiveEvaluator(), GetGenomeFactory(), genomes);
+    }
+
+    #endregion
+
+    #region GetSelectiveEvaluator
+
+    private IGenomeListEvaluator<NeatGenome> GetSelectiveEvaluator()
+    {
       IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(networkActivationScheme);
 
       IGenomeListEvaluator<NeatGenome> innerEvaluator = new SelectiveGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, null);
@@ -140,12 +155,7 @@ namespace VNeuralNetwork
                                                                               innerEvaluator,
                                                                               SelectiveGenomeListEvaluator<NeatGenome>.CreatePredicate_OnceOnly());
 
-      var factory = champ != null ? champ.GenomeFactory : GetGenomeFactory();
-
-      ea.Initialize(selectiveEvaluator, factory, GetGenomeList(factory, agentCount, champ));
-
-
-      NeatAlgorithm = ea;
+      return selectiveEvaluator;
     }
 
     #endregion
@@ -198,10 +208,14 @@ namespace VNeuralNetwork
 
       var factory = GetGenomeFactory(innovationIdGenerator: innovationIdGenerator);
 
-      champ = new NeatGenome(factory, 0u, 0u, new NeuronGeneList(geneList), new ConnectionGeneList(connections), inputCount, outputCount, true);
+      var champ = new NeatGenome(factory, 0u, 0u, new NeuronGeneList(geneList), new ConnectionGeneList(connections), inputCount, outputCount, true);
+
+      loadedGenomes = new List<NeatGenome>() { champ };
     }
 
     #endregion
+
+    #region GetLayer
 
     private List<NeuronGene> GetLayer(UInt32IdGenerator generator, int count, NodeType nodeType)
     {
@@ -216,6 +230,8 @@ namespace VNeuralNetwork
 
       return newLayer;
     }
+
+    #endregion
 
     #region CreateAgents
 
@@ -245,6 +261,8 @@ namespace VNeuralNetwork
 
     #endregion
 
+    #region UpdateGeneration
+
     public void UpdateGeneration()
     {
       NeatAlgorithm.UpdateGeneration();
@@ -259,7 +277,33 @@ namespace VNeuralNetwork
       RaisePropertyChanged(nameof(Generation));
     }
 
-    public void SavePopulation(string path)
+    #endregion
+
+    #region UpdateNEATGeneration
+
+    public void UpdateNEATGeneration()
+    {
+      NeatAlgorithm.UpdateGeneration();
+
+      ResetFitness();
+      RaisePropertyChanged(nameof(Generation));
+    }
+
+    #endregion
+
+    public void ResetFitness()
+    {
+      for (int i = 0; i < NeatAlgorithm.GenomeList.Count; i++)
+      {
+        NeatAlgorithm.GenomeList[i].ResetFitness();
+      }
+
+      RaisePropertyChanged(nameof(Generation));
+    }
+
+    #region SaveBestGenome
+
+    public void SaveBestGenome(string path)
     {
       XmlWriterSettings xwSettings = new XmlWriterSettings();
       xwSettings.Indent = true;
@@ -271,17 +315,79 @@ namespace VNeuralNetwork
       }
     }
 
-    public void LoadPopulation(string path)
-    {
-      List<NeatGenome> genomeList;
+    #endregion
 
+    #region SavePopulation
+
+    public void SavePopulation(string path, string bestGenomePath)
+    {
+      XmlWriterSettings xwSettings = new XmlWriterSettings();
+      xwSettings.Indent = true;
+
+      using (XmlWriter xw = XmlWriter.Create(path, xwSettings))
+      {
+        NeatGenomeXmlIO.WriteComplete(xw, NeatAlgorithm.GenomeList, false);
+
+        SaveBestGenome(bestGenomePath);
+      }
+    }
+
+    #endregion
+
+    #region LoadGeneration
+
+    public void LoadGeneration(string path)
+    {
       using (XmlReader xr = XmlReader.Create(path))
       {
-        genomeList = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, GetGenomeFactory());
+        loadedGenomes = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, GetGenomeFactory());
+      }
+    }
+
+    public List<NeatGenome> GetGeneration(string data)
+    {
+      using (StringReader tx = new StringReader(data))
+      using (XmlReader xr = XmlReader.Create(tx))
+      {
+        // Replace NeatGenomeXmlIO.ReadCompleteGenomeList with your actual method to read genomes.
+        loadedGenomes = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, GetGenomeFactory());
       }
 
-      champ = genomeList[0];
+      return loadedGenomes;
     }
+
+    #endregion
+
+    #region LoadBestGenome
+
+    public void LoadBestGenome(string path)
+    {
+      using (XmlReader xr = XmlReader.Create(path))
+      {
+        loadedGenomes = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, GetGenomeFactory());
+
+        loadedGenomes = loadedGenomes.OrderByDescending(x => x.Fitness).Take(1).ToList();
+      }
+    }
+
+    #endregion
+
+    public void SetBestGenome(NeatGenome neatGenome)
+    {
+      loadedGenomes = new List<NeatGenome>() { new NeatGenome(neatGenome, neatGenome.Id, 0) };
+    }
+
+    public NeatGenome GetLoadedGenome(string path)
+    {
+      using (XmlReader xr = XmlReader.Create(path))
+      {
+        var loadedGenomesc = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, GetGenomeFactory());
+
+        return loadedGenomesc.OrderByDescending(x => x.Fitness).FirstOrDefault();
+      }
+    }
+
+    #region GetParameters
 
     private NeatGenomeParameters GetParameters()
     {
@@ -292,9 +398,13 @@ namespace VNeuralNetwork
       return _neatGenomeParams;
     }
 
-    private NeatGenomeFactory GetGenomeFactory(UInt32IdGenerator genomeIdGenerator = null, UInt32IdGenerator innovationIdGenerator = null)
+    #endregion
+
+    #region GetGenomeFactory
+
+    public NeatGenomeFactory GetGenomeFactory(UInt32IdGenerator genomeIdGenerator = null, UInt32IdGenerator innovationIdGenerator = null)
     {
-      if(genomeIdGenerator == null)
+      if (genomeIdGenerator == null)
       {
         genomeIdGenerator = new UInt32IdGenerator();
       }
@@ -307,16 +417,28 @@ namespace VNeuralNetwork
       return new NeatGenomeFactory(inputCount, outputCount, GetParameters(), genomeIdGenerator, innovationIdGenerator);
     }
 
-    private List<NeatGenome> GetGenomeList(NeatGenomeFactory factory, int agentCount, NeatGenome champ = null)
+    #endregion
+
+    #region GetGenomeList
+
+    private List<NeatGenome> GetGenomeList(
+      NeatGenomeFactory factory,
+      int agentCount,
+      List<NeatGenome> genomes = null)
     {
-      if (champ != null)
+      if (genomes != null)
       {
-        return factory.CreateGenomeList(agentCount, 0u, champ);
+        if (genomes.Count == 1)
+          return factory.CreateGenomeList(agentCount, 0u, genomes[0]);
+        else
+          return factory.CreateGenomeList(agentCount, 0u, genomes);
       }
       else
       {
         return factory.CreateGenomeList(agentCount, 0u);
       }
-    }
+    } 
+
+    #endregion
   }
 }

@@ -25,6 +25,13 @@ namespace VNeuralNetwork
       _currentGeneration++;
     }
 
+    public void UpdateGenerationWithoutFitnessReset()
+    {
+      this.CreateNewGeneration();
+
+      _currentGeneration++;
+    }
+
     public void EvaluateGeneration()
     {
       this.PerformOneGeneration();

@@ -30,10 +30,10 @@ namespace SharpNeat.Genomes.Neat
 
         // High level mutation probabilities
         const double DefaultConnectionWeightMutationProbability = 0.94;
-        const double DefaultAddNodeMutationProbability = 0.01;
-        const double DefaultAddConnectionMutationProbability = 0.025;
+        const double DefaultAddNodeMutationProbability = 0.03;
+        const double DefaultAddConnectionMutationProbability = 0.04;
         const double DefaultNodeAuxStateMutationProbability = 0.00;
-        const double DefaultDeleteConnectionMutationProbability = 0.025;
+        const double DefaultDeleteConnectionMutationProbability = 0.03;
 
         #endregion
 
